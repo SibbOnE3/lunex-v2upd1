@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lunex</title>
+  <link rel="icon" id="dynamic-favicon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "13b38a789fcb45d29543e883ff0524e3"}'></script>
+  <style>
+    :root{
+      --bg0: #03050a; --bg1: #0a0f1d; --glass: rgba(15, 20, 35, 0.7); --stroke: rgba(255,255,255,.08);
+      --txt: rgba(255,255,255,.95); --muted: rgba(255,255,255,.55); --brand1: #8b5cf6; --brand2: #10b981; --brand3: #0ea5e9;
+      --shadow: 0 24px 60px rgba(0,0,0,.60); --r1: 24px; --r2: 18px; --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; background: var(--bg0); color:var(--txt); font-family: Inter, system-ui, sans-serif; overflow: hidden;}
+    
+    /* Dynamic Mesh Background */
+    .bg-mesh {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background: radial-gradient(1000px circle at 15% 10%, rgba(139, 92, 246, 0.15), transparent 60%),
+                  radial-gradient(1200px circle at 85% 20%, rgba(14, 165, 233, 0.12), transparent 60%),
+                  radial-gradient(800px circle at 50% 90%, rgba(16, 185, 129, 0.1), transparent 60%);
+    }
+    #particles-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+    /* ====== V2 LAYOUT: APP SHELL ====== */
+    .app-shell { display: flex; height: 100vh; width: 100vw; }
+    
+    /* ====== GHOST SIDEBAR ====== */
+    .sidebar {
+      width: 76px; height: calc(100vh - 24px); margin: 12px 0 12px 12px;
+      background: var(--glass); backdrop-filter: blur(24px); border: 1px solid var(--stroke);
+      border-radius: var(--r1); display: flex; flex-direction: column; align-items: center;
+      transition: width 0.4s var(--ease); overflow: hidden; white-space: nowrap; z-index: 100;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+    }
+    .sidebar:hover { width: 240px; align-items: flex-start; }
+    
+    .sb-brand { display: flex; align-items: center; gap: 16px; padding: 20px; width: 100%; cursor:pointer; }
+    .logo-mark { width: 36px; height: 36px; min-width: 36px; border-radius: 12px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: 900; font-family: 'Space Grotesk'; font-size: 18px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+    .sb-brand-text { font-family: 'Space Grotesk'; font-weight: 800; font-size: 20px; opacity: 0; transition: opacity 0.3s; }
+    .sidebar:hover .sb-brand-text { opacity: 1; }
+
+    .sb-nav { display: flex; flex-direction: column; width: 100%; padding: 0 12px; gap: 8px; flex: 1; margin-top: 10px; }
+    .sb-tab {
+      display: flex; align-items: center; gap: 16px; width: 100%; padding: 12px; border-radius: 14px;
+      background: transparent; border: 1px solid transparent; color: var(--muted); cursor: pointer;
+      transition: all 0.3s var(--ease); font-weight: 600; font-size: 14px; outline: none;
+    }
+    .sb-icon { width: 22px; height: 22px; min-width: 22px; opacity: 0.7; transition: 0.3s; }
+    .sb-tab-text { opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateX(-10px); }
+    .sidebar:hover .sb-tab-text { opacity: 1; transform: translateX(0); }
+    
+    .sb-tab:hover { background: rgba(255,255,255,.05); color: var(--txt); }
+    .sb-tab:hover .sb-icon { opacity: 1; transform: scale(1.1); }
+    .sb-tab.active { background: rgba(255,255,255,.1); border-color: var(--stroke); color: var(--txt); box-shadow: 0 4px 15px rgba(0,0,0,.2); }
+    .sb-tab.active .sb-icon { opacity: 1; color: var(--brand1); filter: drop-shadow(0 0 8px rgba(139,92,246,0.6)); }
+
+    .sb-foot { width: 100%; padding: 12px; border-top: 1px solid var(--stroke); margin-top: auto; }
+    .xp-pill { background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 12px; overflow: hidden; }
+    .xp-circle { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; background: var(--brand2); display:grid; place-items:center; font-weight: 800; font-size: 12px; color: #000; box-shadow: 0 0 10px rgba(16,185,129,0.4);}
+    .xp-info { display: flex; flex-direction: column; opacity: 0; transition: 0.3s; }
+    .sidebar:hover .xp-info { opacity: 1; }
+    .xp-title { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
+    .xp-val { font-size: 13px; font-weight: 700; color: var(--txt); }
+
+    /* ====== MAIN CONTENT AREA ====== */
+    .main-wrap { flex: 1; padding: 12px 16px 12px 24px; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; height: 100vh; scroll-behavior: smooth; }
+    
+    /* Top Header */
+    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 12px; }
+    .page-title { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 12px; }
+    .header-actions { display: flex; gap: 12px; }
+
+    .btn {
+      border:0; border-radius: 999px; padding: 10px 20px; background: linear-gradient(135deg, var(--brand2), var(--brand3));
+      color: #030810; font-weight: 800; cursor:pointer; transition: all .3s var(--ease); box-shadow: 0 4px 15px rgba(16,185,129,.3); font-size: 14px;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,.5); filter: brightness(1.1); }
+    
+    .ghost {
+      border: 1px solid var(--stroke); background: rgba(0,0,0,.2); color: var(--txt); border-radius: 999px;
+      padding: 10px 18px; cursor:pointer; font-weight: 600; font-size: 13px; transition: all .3s var(--ease);
+    }
+    .ghost:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); transform: translateY(-2px); }
+
+    /* Views */
+    .view { display: none; flex-direction: column; animation: fadeSlideUp 0.4s var(--ease) forwards; }
+    .view.active { display: flex; }
+    @keyframes fadeSlideUp { from{opacity:0; transform: translateY(15px)} to{opacity:1; transform: translateY(0)} }
+
+    /* Panels & Grids */
+    .glass-panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r1); padding: 24px; backdrop-filter: blur(16px); margin-bottom: 24px; box-shadow: var(--shadow); }
+    .searchRow { display:flex; gap:12px; margin-bottom: 20px; }
+    .search { flex:1; border-radius: 14px; padding: 14px 20px; background: rgba(0,0,0,.3); border: 1px solid var(--stroke); color: var(--txt); outline:none; font-size: 15px; transition: all .3s var(--ease); font-family: Inter, sans-serif; }
+    .search:focus { border-color: var(--brand1); background: rgba(0,0,0,.5); box-shadow: 0 0 0 4px rgba(139,92,246,.15); }
+    
+    .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 20px; }
+    .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(0,0,0,.3); color: var(--muted); cursor:pointer; font-weight: 600; font-size: 13px; transition: all .2s var(--ease); }
+    .chip.active { color: #fff; background: rgba(139,92,246,.2); border-color: var(--brand1); box-shadow: 0 4px 15px rgba(139,92,246,.2); }
+    .chip:hover:not(.active) { background: rgba(255,255,255,.1); color: var(--txt); }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .card {
+      border-radius: var(--r2); border: 1px solid var(--stroke); background: rgba(0,0,0,.4); overflow:hidden;
+      cursor:pointer; transition: all .4s var(--ease); position: relative;
+    }
+    .card:hover { transform: translateY(-6px); border-color: rgba(139, 92, 246, 0.5); background: rgba(255,255,255,.05); box-shadow: 0 15px 35px rgba(0,0,0,.4), 0 0 20px rgba(139,92,246,.15); }
+    .thumb { width:100%; height: 140px; background: #000; object-fit: cover; transition: transform .5s var(--ease); }
+    .card:hover .thumb { transform: scale(1.05); }
+    .cBody { padding: 16px; position: relative; z-index: 2; background: inherit; }
+    .cName { font-weight: 800; font-size: 16px; margin:0 0 6px; }
+    .cDesc { margin:0; font-size: 13px; color: var(--muted); min-height: 38px; line-height: 1.4; }
+    .cMeta { margin-top: 14px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
+    .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--muted); text-transform: uppercase; }
+
+    /* ====== COMMAND CENTER (SETTINGS) ====== */
+    .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .cmd-grid { grid-template-columns: 1fr; } }
+    .cmd-box { background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); border-radius: 16px; padding: 24px; }
+    .cmd-title { font-family: 'Space Grotesk'; font-size: 18px; font-weight: 800; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; color: var(--brand2); }
+    .cmd-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .cmd-row:last-child { border: none; padding-bottom: 0; }
+    .cmd-label { font-weight: 600; font-size: 14px; }
+    .cmd-sub { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
+    
+    /* Toggle Switch */
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--stroke); }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--brand2); border-color: var(--brand2); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Keybinder Button */
+    .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand1); color: var(--brand1); padding: 6px 16px; border-radius: 8px; font-family: monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .keybind-btn:hover { background: rgba(139,92,246,0.2); }
+    .keybind-btn.listening { background: var(--brand1); color: #fff; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
+
+    /* Dropdown */
+    .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; font-family: Inter; }
+
+    /* ====== FIXED VIEWS (Browser, Clips) ====== */
+    #view-browser, #view-clips, #view-music { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; border: 1px solid var(--stroke); border-radius: var(--r1); overflow: hidden; }
+    .lunex-browser-container { display: flex; flex-direction: column; height: 100%; background: #000; }
+    .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.9); border-bottom: 1px solid var(--stroke); }
+    .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
+    .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .browser-url-bar { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; }
+    #lunex-proxy-frame { flex: 1; border: none; width: 100%; }
+
+    /* Overlays & Modals (Kept from V1, polished) */
+    .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
+    .overlay.open { display:flex; }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
+    .overlay.open .player { transform: scale(1); }
+    .playerbar { padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--bg1); border-bottom: 1px solid var(--stroke); }
+    .frameWrap { flex:1; background: #000; }
+    iframe { width:100%; height:100%; border:0; }
+    .modal-box { background: rgba(15, 20, 35, 0.95); padding: 32px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 440px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); text-align: center; }
+
+    /* SVG Utilities */
+    svg { width: 22px; height: 22px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+  <canvas id="particles-canvas"></canvas>
+
+  <div class="app-shell">
+    
+    <nav class="sidebar">
+      <div class="sb-brand" onclick="window.location.reload()">
+        <div class="logo-mark">L</div>
+        <div class="sb-brand-text">Lunex</div>
+      </div>
+      
+      <div class="sb-nav" id="nav">
+        <button class="sb-tab active" data-view="play">
+          <svg class="sb-icon"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-4h.01M14 14h.01"/></svg>
+          <span class="sb-tab-text">Library</span>
+        </button>
+        <button class="sb-tab" data-view="apps">
+          <svg class="sb-icon"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z"/></svg>
+          <span class="sb-tab-text">Apps</span>
+        </button>
+        <button class="sb-tab" data-view="clips">
+          <svg class="sb-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span class="sb-tab-text">Clips</span>
+        </button>
+        <button class="sb-tab" data-view="browser">
+          <svg class="sb-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          <span class="sb-tab-text">Browser</span>
+        </button>
+        <button class="sb-tab" data-view="chat">
+          <svg class="sb-icon"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          <span class="sb-tab-text">Luna AI</span>
+        </button>
+        <button class="sb-tab" data-view="settings" style="margin-top: auto;">
+          <svg class="sb-icon"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="sb-tab-text">Settings</span>
+        </button>
+      </div>
+
+      <div class="sb-foot">
+        <div class="xp-pill" id="levelPill">
+          <div class="xp-circle" id="lv">1</div>
+          <div class="xp-info">
+            <span class="xp-title">Current XP</span>
+            <span class="xp-val" id="xp">0</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-wrap">
+      
+      <section class="view active" id="view-play">
+        <div class="top-header">
+          <h1 class="page-title">🎮 Library</h1>
+          <div class="header-actions">
+            <button class="ghost" id="openReqBtnPlay">+ Request Game</button>
+            <button class="ghost" id="shuffleGames">Shuffle</button>
+            <button class="btn" id="boredBtn">I'm Bored</button>
+          </div>
+        </div>
+        <div class="glass-panel">
+          <div class="searchRow"><input class="search" id="gameSearch" placeholder="Search games, tags, descriptions..." autocomplete="off" /></div>
+          <div class="chips" id="gameChips"></div>
+          <div class="grid" id="gameGrid"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-apps">
+        <div class="top-header"><h1 class="page-title">🧩 Apps</h1></div>
+        <div class="glass-panel">
+          <div class="searchRow"><input class="search" id="appSearch" placeholder="Search apps..." autocomplete="off" /></div>
+          <div class="chips" id="appChips"></div>
+          <div class="grid" id="appGrid"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="top-header"><h1 class="page-title"><svg><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg> Command Center</h1></div>
+        
+        <div class="cmd-grid">
+          <div class="cmd-box" style="border-color: rgba(139,92,246,0.3); background: radial-gradient(circle at top right, rgba(139,92,246,0.1), transparent);">
+            <h2 class="cmd-title"><svg style="stroke: var(--brand1)"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Stealth Systems</h2>
+            
+            <div class="cmd-row">
+              <div>
+                <span class="cmd-label">Panic Key (Cloak)</span>
+                <span class="cmd-sub">Press this key to instantly hide Lunex.</span>
+              </div>
+              <button id="panicBindBtn" class="keybind-btn">`</button>
+            </div>
+            
+            <div class="cmd-row">
+              <div>
+                <span class="cmd-label">Panic Redirect URL</span>
+                <span class="cmd-sub">Where the panic key takes you.</span>
+              </div>
+              <select id="panicTargetSelect" class="cmd-select">
+                <option value="https://classroom.google.com">Google Classroom</option>
+                <option value="https://www.wikipedia.org">Wikipedia</option>
+                <option value="https://www.desmos.com/calculator">Desmos Calculator</option>
+              </select>
+            </div>
+
+            <div class="cmd-row">
+              <div>
+                <span class="cmd-label">Auto Tab Disguise</span>
+                <span class="cmd-sub">Changes icon/title when teacher walks by.</span>
+              </div>
+              <label class="toggle"><input type="checkbox" id="disguiseToggle"><span class="slider"></span></label>
+            </div>
+          </div>
+
+          <div class="cmd-box">
+            <h2 class="cmd-title"><svg style="stroke: var(--brand2)"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Local Profile</h2>
+            <div id="profileBox"></div> </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-browser">
+        <div class="lunex-browser-container">
+          <div class="browser-top-bar">
+            <button class="nav-btn" onclick="resetProxy()" title="Home"><svg><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></button>
+            <button class="nav-btn" onclick="reloadProxy()" title="Reload"><svg><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg></button>
+            <button class="nav-btn" onclick="document.getElementById('lunex-proxy-frame').requestFullscreen()" title="Fullscreen"><svg><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></button>
+            <div class="browser-url-bar"><svg style="margin-right:8px; width:16px;height:16px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Secure Tunnel Active</div>
+          </div>
+          <iframe id="lunex-proxy-frame" src="https://tropical-marcia-lunexprod-d8790374.koyeb.app/" allowfullscreen></iframe>
+        </div>
+      </section>
+
+      <section class="view" id="view-clips">
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background: radial-gradient(circle at center, rgba(139,92,246,0.15), transparent 60%);">
+          <svg style="width: 80px; height: 80px; stroke: var(--brand1); margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(139,92,246,0.5));" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <h2 style="font-family:'Space Grotesk'; font-size:32px; font-weight:800; margin:0 0 12px; color: #fff;">Re-engineering Feed...</h2>
+          <p style="color: var(--muted); font-size: 16px; max-width: 400px; line-height: 1.5;">We are forging the ultimate infinite scroll experience. A massive, perfectly tuned video feed is arriving soon.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-chat">
+        <div class="top-header"><h1 class="page-title">✨ Luna AI</h1></div>
+        <div class="glass-panel" style="flex: 1; display: flex; flex-direction: column; padding: 16px;">
+          <div id="chatBox" style="flex: 1; display: flex; flex-direction: column;"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="player">
+      <div class="playerbar">
+        <div class="ptitle" id="playerTitle" style="font-weight: 800; font-size: 18px;">Game</div>
+        <div style="display:flex; gap: 10px;">
+          <button class="ghost" id="fsBtn">Fullscreen</button>
+          <a class="ghost linkbtn" id="newTabBtn" target="_blank" style="text-decoration: none;">New tab</a>
+          <button class="ghost" id="closeBtn" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5;">Close</button>
+        </div>
+      </div>
+      <div class="frameWrap"><iframe id="playerFrame" allow="fullscreen; autoplay" referrerpolicy="no-referrer"></iframe></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="reqModal">
+    <div class="modal-box" style="text-align: left;">
+      <div id="reqFormArea">
+        <h3 style="margin-top:0; font-family:'Space Grotesk',sans-serif; font-size: 24px; color:var(--brand2);">Request a Game</h3>
+        <p style="font-size:14px; color:var(--muted); margin-bottom: 20px;">Tell us what you want to play.</p>
+        <input id="reqGameName" class="search" placeholder="Game Name (e.g. Minecraft 2D)" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-weight: 600;" autocomplete="off" />
+        <textarea id="reqGameDesc" class="search" placeholder="Any links or unblocked versions?" style="width:100%; box-sizing:border-box; resize:vertical; min-height:100px; padding:16px;"></textarea>
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content: flex-end;">
+          <button id="cancelReq" class="ghost">Cancel</button>
+          <button id="submitReq" class="btn">Send Request</button>
+        </div>
+      </div>
+      <div id="reqSuccessArea" style="display:none; text-align: center;">
+        <h3 style="margin-top:0; font-family:'Space Grotesk'; font-size: 28px; color:var(--brand2);">Sent! ✅</h3>
+        <p style="font-size:15px; color:var(--muted); margin-bottom: 24px; line-height: 1.5;">Your request is on its way to the secure Discord channel.</p>
+        <button id="closeReqSuccessBtn" class="ghost" style="width:100%; padding:14px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="motdModal">
+    <div class="modal-box">
+      <div style="font-size: 54px; margin-bottom: 16px;">👋</div>
+      <h2 id="motdTitle" style="margin-top:0; font-family:'Space Grotesk'; font-size: 28px; color:var(--brand1);">Welcome!</h2>
+      <p id="motdText" style="font-size:15px; color:var(--muted); line-height: 1.6; margin-bottom: 24px;">Message loading...</p>
+      <button class="btn discord-link-btn" style="width: 100%; padding: 14px; font-size: 15px; margin-bottom: 12px; background: #5865F2; color: white; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);">Join Discord Server</button>
+      <button id="motdDoneBtn" class="ghost" style="width: 100%; padding: 14px; font-size: 15px;">Enter Lunex</button>
+    </div>
+  </div>
+  
+  <script src="/patch.js?v=29" defer></script>
+  <script>
+    function resetProxy() { document.getElementById('lunex-proxy-frame').src = "https://tropical-marcia-lunexprod-d8790374.koyeb.app/"; }
+    function reloadProxy() { const f = document.getElementById('lunex-proxy-frame'); f.src = f.src; }
+  </script>
+</body>
+</html>

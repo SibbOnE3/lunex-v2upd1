@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick | Lunex Apps</title>
+    <link rel="icon" type="image/png" href="https://kick.com/favicon.ico">
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0b0e14; /* Kick's dark background color */
+        }
+        
+        /* The fullscreen frame */
+        #app-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* A sleek loading screen while the proxy connects */
+        #loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0b0e14;
+            color: #53fc18; /* Kick Neon Green */
+            font-family: system-ui, sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(83, 252, 24, 0.2);
+            border-top: 4px solid #53fc18;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div>CONNECTING TO NODE...</div>
+    </div>
+
+    <iframe id="app-frame" allow="fullscreen; autoplay"></iframe>
+
+    <script>
+        // 💥 PASTE YOUR EXTERNAL PROXY URL HERE WHEN IT IS READY
+        // Example: const PROXY_URL = "https://your-proxy-backend.com/service/";
+        const PROXY_URL = ""; 
+        
+        const TARGET_URL = "https://kick.com";
+        const frame = document.getElementById('app-frame');
+        const loader = document.getElementById('loader');
+
+        // Route the traffic
+        if (PROXY_URL.trim() === "") {
+            // Fallback to direct connection if proxy is empty
+            frame.src = TARGET_URL;
+        } else {
+            // Tunnel through the stealth network
+            frame.src = PROXY_URL + encodeURIComponent(TARGET_URL);
+        }
+
+        // Hide the loading screen once the site starts rendering
+        frame.onload = () => {
+            loader.style.opacity = "0";
+            setTimeout(() => loader.style.display = "none", 500);
+        };
+    </script>
+</body>
+</html>
