@@ -204,7 +204,7 @@
   }
 
   // ======================
-  //  Game Data & Rendering
+  //  Game Data & Dynamic Engine
   // ======================
   const BASE_GAMES = [
     { name:"2048", url:"https://ultima-10b.pages.dev/", tag:"Puzzle", desc:"Combine tiles to reach 2048." },
@@ -300,7 +300,38 @@
     for (const x of extra) map.set(x.name.toLowerCase(), x);
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
-  const GAMES = mergeByName(BASE_GAMES, EXTRA_GAMES);
+
+  // 👇 DYNAMIC ENGINE LOGIC BEGINS HERE 👇
+  let GAMES = [];
+  const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
+
+  // We scope this out so the dynamic engine can trigger it after downloading games
+  let onGamePick = (t) => { 
+    gameFilterTag = t; 
+    renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick); 
+    renderGames(); 
+  };
+
+  async function syncDatabase() {
+    try {
+      const response = await fetch(GITHUB_JSON_URL);
+      if (response.ok) {
+        const remoteGames = await response.json();
+        GAMES = mergeByName(BASE_GAMES, remoteGames); // Merges Discord games with Base list
+      } else {
+        throw new Error("Network error");
+      }
+    } catch (e) {
+      console.warn("Using local backup...");
+      GAMES = mergeByName(BASE_GAMES, EXTRA_GAMES);
+    }
+    
+    // Once downloaded, render the UI
+    gameList = [...GAMES];
+    renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick);
+    renderGames();
+  }
+  // 👆 DYNAMIC ENGINE LOGIC ENDS HERE 👆
 
   const APPS = [
     { name:"ChatGPT", url:"https://studyquick.lbry.ru/storage/ag/apps/chatgpt/", category:"AI", desc:"Ask, write, learn, and explore." },
@@ -485,8 +516,10 @@
   // Init
   function init() {
     syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
-    const onGamePick = (t) => { gameFilterTag = t; renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick); renderGames(); };
-    renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick); renderGames();
+    
+    // Fires the dynamic database fetch
+    syncDatabase(); 
+    
     const onAppPick = (t) => { appFilter = t; renderChips(appChips, uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
     renderChips(appChips, uniqueCats(APPS), appFilter, onAppPick); renderApps();
     renderProfile(); renderChatUI();
