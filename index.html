@@ -137,25 +137,40 @@
     input:checked + .slider { background-color: var(--brand2); border-color: var(--brand2); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Keybinder Button */
+    /* Keybinder & Dropdown */
     .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand1); color: var(--brand1); padding: 6px 16px; border-radius: 8px; font-family: monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .keybind-btn:hover { background: rgba(139,92,246,0.2); }
     .keybind-btn.listening { background: var(--brand1); color: #fff; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
-
-    /* Dropdown */
     .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; font-family: Inter; }
 
-    /* ====== FIXED VIEWS (Browser, Clips) ====== */
-    #view-browser, #view-clips, #view-music { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; border: 1px solid var(--stroke); border-radius: var(--r1); overflow: hidden; }
+    /* ====== FIXED VIEWS (Browser, Music, AI) ====== */
+    #view-browser, #view-clips, #view-music, #view-chat { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; overflow: hidden; }
+    #view-browser, #view-music { border: 1px solid var(--stroke); border-radius: var(--r1); }
+    
+    /* Browser Frame */
     .lunex-browser-container { display: flex; flex-direction: column; height: 100%; background: #000; }
     .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.9); border-bottom: 1px solid var(--stroke); }
     .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
     .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .browser-url-bar { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; }
-    #lunex-proxy-frame { flex: 1; border: none; width: 100%; }
+    
+    /* NEW: AI CHAT STYLES */
+    .chat-input-wrapper { background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 16px; display: flex; align-items: center; padding: 10px 16px; gap: 12px; transition: border-color 0.3s; margin-top: 10px; }
+    .chat-input-wrapper:focus-within { border-color: var(--brand1); }
+    .input-icon { width: 20px; height: 20px; color: var(--muted); stroke: currentColor; fill: none; stroke-width: 2; }
+    #chatInput { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 15px; font-family: Inter; }
+    #chatSend { background: transparent; border: none; cursor: pointer; color: var(--muted); display: grid; place-items: center; transition: 0.2s; padding: 0; }
+    #chatSend:hover { color: var(--brand1); }
+    .prompt-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); color: var(--muted); padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; font-family: Inter; }
+    .prompt-pill:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+    .chat-msg { margin: 8px 0; max-width: 85%; font-size: 14px; line-height: 1.6; word-wrap: break-word; }
+    .chat-msg.user { align-self: flex-end; background: rgba(139, 92, 246, 0.2); padding: 12px 16px; border-radius: 18px 18px 4px 18px; border: 1px solid rgba(139,92,246,0.2); }
+    .chat-msg.bot { align-self: flex-start; padding: 12px 0; border-radius: 18px 18px 18px 4px; color: var(--txt); }
+    .chat-msg code { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid var(--stroke); }
+    .chat-watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; text-align: center; pointer-events: none; }
 
-    /* Overlays & Modals (Kept from V1, polished) */
+    /* Overlays & Modals */
     .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
     .overlay.open { display:flex; }
     @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
@@ -200,6 +215,12 @@
           <svg class="sb-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
           <span class="sb-tab-text">Browser</span>
         </button>
+
+        <button class="sb-tab" data-view="music">
+          <svg class="sb-icon"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <span class="sb-tab-text">Music</span>
+        </button>
+
         <button class="sb-tab" data-view="chat">
           <svg class="sb-icon"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           <span class="sb-tab-text">Luna AI</span>
@@ -302,8 +323,14 @@
         </div>
       </section>
 
+      <section class="view" id="view-music">
+        <div class="lunex-browser-container">
+          <iframe src="https://monochrome.tf/" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </section>
+
       <section class="view" id="view-clips">
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background: radial-gradient(circle at center, rgba(139,92,246,0.15), transparent 60%);">
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background: radial-gradient(circle at center, rgba(139,92,246,0.15), transparent 60%); border: 1px solid var(--stroke); border-radius: var(--r1);">
           <svg style="width: 80px; height: 80px; stroke: var(--brand1); margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(139,92,246,0.5));" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
           <h2 style="font-family:'Space Grotesk'; font-size:32px; font-weight:800; margin:0 0 12px; color: #fff;">Re-engineering Feed...</h2>
           <p style="color: var(--muted); font-size: 16px; max-width: 400px; line-height: 1.5;">We are forging the ultimate infinite scroll experience. A massive, perfectly tuned video feed is arriving soon.</p>
@@ -311,9 +338,39 @@
       </section>
 
       <section class="view" id="view-chat">
-        <div class="top-header"><h1 class="page-title">✨ Luna AI</h1></div>
-        <div class="glass-panel" style="flex: 1; display: flex; flex-direction: column; padding: 16px;">
-          <div id="chatBox" style="flex: 1; display: flex; flex-direction: column;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--stroke); margin-bottom: 16px;">
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: bold;">L</div>
+            <div>
+              <div style="font-weight: bold; font-size: 16px; color: var(--txt);">LunaAI</div>
+              <div style="font-size: 11px; color: var(--muted);">Powered by Llama 3.2</div>
+            </div>
+          </div>
+          <select id="lunaModelSelect" class="cmd-select" style="background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 999px; cursor: pointer; border-color: rgba(255,255,255,0.1);">
+            <option value="llama">Fast Llama 3B (Optimized)</option>
+            <option value="gpt-4o">GPT-4 Omni</option>
+            <option value="mistral">Mistral NeMo</option>
+          </select>
+        </div>
+
+        <div id="chatLog" style="flex: 1; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; position: relative; z-index: 1;">
+           <div class="chat-watermark">
+              <svg style="width: 80px; height: 80px; stroke: white; margin-bottom: 10px;" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              <div style="font-size: 24px; font-weight: bold; font-family: 'Space Grotesk';">Luna AI</div>
+           </div>
+        </div>
+
+        <div id="aiPrompts" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;">
+           <button class="prompt-pill">How do I learn to code efficiently?</button>
+           <button class="prompt-pill">Tell me a funny joke!</button>
+           <button class="prompt-pill">Give me a fun fact!</button>
+           <button class="prompt-pill">What's a good game to play?</button>
+        </div>
+
+        <div class="chat-input-wrapper">
+           <svg class="input-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+           <input id="chatInput" placeholder="What would you like to talk about?" autocomplete="off" />
+           <button id="chatSend"><svg viewBox="0 0 24 24" style="transform: rotate(45deg); width: 22px; height: 22px;"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
         </div>
       </section>
 
@@ -364,7 +421,7 @@
     </div>
   </div>
   
-  <script src="/patch.js?v=29" defer></script>
+  <script src="/patch.js?v=30" defer></script>
   <script>
     function resetProxy() { document.getElementById('lunex-proxy-frame').src = "https://tropical-marcia-lunexprod-d8790374.koyeb.app/"; }
     function reloadProxy() { const f = document.getElementById('lunex-proxy-frame'); f.src = f.src; }
