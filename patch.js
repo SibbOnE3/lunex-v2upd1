@@ -523,17 +523,17 @@
     log.appendChild(typingDiv);
     log.scrollTop = log.scrollHeight;
 
-    try {
-      const selectedModel = $("#lunaModelSelect")?.value || "llama";
+try {
+      const selectedModel = $("#lunaModelSelect")?.value || "openai"; // "openai" is very stable
 
-      // Keep memory extremely short so the URL doesn't crash the browser's character limit
-      let promptString = "System: You are Luna, a chill AI for Lunex Network. Keep answers short and fun.\n";
-      h.slice(-2).forEach(m => {
-        promptString += `${m.role === 'user' ? 'User' : 'Luna'}: ${m.content}\n`;
-      });
+      // Simplify the prompt to avoid the 404 error
+      // We just send the last message directly to keep the URL clean
+      const userMessage = text;
+      
+      // NEW BULLETPROOF URL FORMAT
+      const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(userMessage)}?model=${selectedModel}&system=${encodeURIComponent("You are Luna, the chill AI for Lunex V2. Keep it short.")}`;
 
-      // Using the bulletproof GET fetch URL
-      const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptString)}?model=${selectedModel}`);
+      const res = await fetch(apiUrl);
 
       if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
       const reply = await res.text(); 
@@ -544,11 +544,9 @@
       appendBubble("assistant", reply);
 
     } catch (e) {
-      // THE WIRETAP: Prints the exact error to your developer console
       console.error("🔴 LUNA AI CRASH REPORT:", e); 
-      
       document.getElementById(typingId)?.remove();
-      appendBubble("assistant", `Oops! My brain crashed. **Error:** \`${e.message}\`. (Press F12 and check the Console for the red error code!) 😵`);
+      appendBubble("assistant", `Oops! My brain crashed. **Error:** \`${e.message}\`. (Check the Console!) 😵`);
     }
   }
 
