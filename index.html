@@ -17,6 +17,13 @@
       --shadow: 0 24px 60px rgba(0,0,0,.60); --r1: 24px; --r2: 18px; --ease: cubic-bezier(.2,.8,.2,1);
     }
     *{box-sizing:border-box}
+    
+    /* Custom Dark Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg0); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
     html,body{height:100%; margin:0; background: var(--bg0); color:var(--txt); font-family: Inter, system-ui, sans-serif; overflow: hidden;}
     
     /* Dynamic Mesh Background */
