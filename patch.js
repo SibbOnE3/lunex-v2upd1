@@ -314,7 +314,7 @@
 
   async function syncDatabase() {
     try {
-      const response = await fetch(GITHUB_JSON_URL);
+      const response = await fetch(GITHUB_JSON_URL + "?nocache=" + Date.now());
       if (response.ok) {
         const remoteGames = await response.json();
         GAMES = mergeByName(BASE_GAMES, remoteGames); // Merges Discord games with Base list
