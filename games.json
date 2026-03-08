@@ -70,5 +70,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/iron-snout/",
     "tag": "Fighting",
     "desc": "Iron Snout puts you in fast-paced fighting action!"
+  },
+  {
+    "name": "Dune",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/dune/",
+    "tag": "Arcade",
+    "desc": "Jump above the line to score, but beware! The higher you get, the harder the landing will be! Don't crash and keep it smooth!"
   }
 ]
