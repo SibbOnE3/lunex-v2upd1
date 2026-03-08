@@ -40,5 +40,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/skiddy-taxi/",
     "tag": "Action",
     "desc": "Action packed taxi game!"
+  },
+  {
+    "name": "Blockpost",
+    "url": "https://studyquick.lbry.ru/storage/ag/echo/blockpost/",
+    "tag": "Multiplayer",
+    "desc": "Action-packed multiplayer online gaming experience where players play different modes against each other."
   }
 ]
