@@ -36,26 +36,34 @@
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // ======================
-  //  TERMINAL BOOT SEQUENCE
+  //  TERMINAL BOOT SEQUENCE (BULLETPROOF CACHE FIX)
   // ======================
   function runBootSequence() {
     const boot = $("#bootScreen");
+    
     if (!boot || sessionStorage.getItem("lunex_booted")) {
       if(boot) boot.style.display = "none";
       return;
     }
+
+    // Only display if the script actually successfully fires
+    boot.style.display = "flex";
+
     const lines = [
       "[INITIATING SECURE CONNECTION...]",
       "[BYPASSING FIREWALL PROTOCOLS...]",
       "[LOADING LUNEX V2 KERNEL...]",
       "[ACCESS GRANTED]"
     ];
+    
     const textDiv = $("#bootText");
     let delay = 0;
+    
     lines.forEach((line) => {
       setTimeout(() => { textDiv.innerHTML += line + "<br>"; }, delay);
       delay += 400 + Math.random() * 300;
     });
+    
     setTimeout(() => {
       boot.style.opacity = "0";
       setTimeout(() => boot.remove(), 600);
@@ -70,7 +78,6 @@
   let panicTarget = localStorage.getItem("lunex_panic_target") || "https://classroom.google.com";
   let disguiseActive = localStorage.getItem("lunex_disguise") === "true";
 
-  // Escape key support to instantly close games
   window.addEventListener("keydown", (e) => {
     if (e.key === panicKey) { window.location.replace(panicTarget); }
     if (e.key === "Escape" && $("#overlay")?.classList.contains("open")) { closeGame(); }
@@ -132,7 +139,7 @@
   }
 
   // ======================
-  //  PREMIUM PARTICLE ENGINE 
+  //  PREMIUM PARTICLE ENGINE (UPGRADED DUAL-COLOR EFFECT)
   // ======================
   const pCanvas = document.getElementById('particles-canvas');
   const ctx = pCanvas?.getContext('2d');
@@ -143,11 +150,14 @@
       width = pCanvas.width = window.innerWidth;
       height = pCanvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 70; i++) { 
+      for (let i = 0; i < 75; i++) { 
+          // 50% chance of purple (139, 92, 246) or blue (14, 165, 233)
+          let color = Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233';
           particles.push({
               x: Math.random() * width, y: Math.random() * height,
-              r: Math.random() * 2 + 1, speed: Math.random() * 0.4 + 0.1, 
-              angle: Math.random() * Math.PI * 2, alpha: Math.random() * 0.6 + 0.2 
+              r: Math.random() * 2 + 1.5, speed: Math.random() * 0.4 + 0.1, 
+              angle: Math.random() * Math.PI * 2, alpha: Math.random() * 0.7 + 0.3,
+              color: color
           });
       }
   }
@@ -158,23 +168,24 @@
       
       for (let i = 0; i < particles.length; i++) {
           let p = particles[i];
-          p.y -= p.speed; p.x += Math.sin(p.angle) * 0.4; p.angle += 0.01;
+          p.y -= p.speed; p.x += Math.sin(p.angle) * 0.5; p.angle += 0.01;
           if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
           
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`; 
-          ctx.shadowBlur = 12; ctx.shadowColor = "rgba(139, 92, 246, 0.8)"; 
+          ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`; 
+          ctx.shadowBlur = 15; ctx.shadowColor = `rgba(${p.color}, 0.8)`; 
           ctx.fill();
 
           for (let j = i + 1; j < particles.length; j++) {
               let p2 = particles[j];
               let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-              if (dist < 110) {
+              if (dist < 120) {
                   ctx.beginPath();
                   ctx.moveTo(p.x, p.y);
                   ctx.lineTo(p2.x, p2.y);
-                  ctx.strokeStyle = `rgba(139, 92, 246, ${(1 - dist/110) * 0.25})`;
-                  ctx.lineWidth = 0.6;
+                  // Connect lines using base purple, fading by distance
+                  ctx.strokeStyle = `rgba(139, 92, 246, ${(1 - dist/120) * 0.3})`;
+                  ctx.lineWidth = 0.8;
                   ctx.stroke();
               }
           }
@@ -250,7 +261,7 @@
       let mins = getInt(LS.PLAYTIME, 0) + 1;
       setInt(LS.PLAYTIME, mins);
       if($("#ptDisplay")) $("#ptDisplay").innerText = formatPT(mins);
-    }, 60000); // 1 minute
+    }, 60000); 
   }
   function stopPlaytime() { clearInterval(ptTimer); ptTimer = null; }
   function formatPT(mins) {
@@ -348,7 +359,6 @@
     { name:"Crazy Bikes", url:"https://studyquick.lbry.ru/storage/ag/arsenic/crazy-bikes/", tag:"Racing", desc:"Perform stunts and race dirt bikes on crazy obstacle courses." },
     { name:"Crazy Cars", url:"https://studyquick.lbry.ru/storage/ag/arsenic/crazy-cars/", tag:"Cars", desc:"Drive fast, jump ramps, and collect stars in a 3D arena." },
     { name:"Ragdoll Hit", url:"https://studyquick.lbry.ru/storage/ag/originals/ragdoll-hit/", tag:"Physics", desc:"Beat down enemies using floppy ragdoll physics and weapons." },
-    // NEW MASSIVE DROP GAMES
     { name:"Voxiom.io", url:"https://studyquick.lbry.ru/storage/ag/arsenic/voxiom-io/", tag:".io", desc:"Voxel battle royale and crafting survival." },
     { name:"Bacon May Die", url:"https://studyquick.lbry.ru/storage/ag/arsenic/bacon-may-die/", tag:"Action", desc:"Pig fighting game with tons of weapons." },
     { name:"Moto X3M", url:"https://studyquick.lbry.ru/storage/ag/arsenic/moto-x3m/", tag:"Racing", desc:"Classic motorcycle stunt and racing game." },
@@ -425,12 +435,12 @@
     $("#newTabBtn").href = game.url; 
     overlay.classList.add("open"); 
     addXP(3); 
-    startPlaytime(); // Starts the clock!
+    startPlaytime(); 
   }
   function closeGame() { 
     overlay?.classList.remove("open"); 
     if (frame) frame.src = ""; 
-    stopPlaytime(); // Stops the clock!
+    stopPlaytime(); 
   }
   $("#closeBtn")?.addEventListener("click", closeGame);
   overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeGame(); });
@@ -651,7 +661,7 @@
 
   // Init
   function init() {
-    runBootSequence(); // Runs the terminal effect
+    runBootSequence(); 
     syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
     
     syncDatabase(); 
