@@ -2,6 +2,9 @@
   if (window.__LUNEX_PATCH_LOADED__) return;
   window.__LUNEX_PATCH_LOADED__ = true;
 
+  // ======================
+  //  UI ANIMATIONS & CSS INJECTION 
+  // ======================
   const style = document.createElement('style');
   style.innerHTML = `
     .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(15px); }
@@ -10,12 +13,15 @@
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulseDot { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
-    .card { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; }
+    .card { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; animation: fadeInCard 0.4s ease forwards; opacity: 0; }
+    @keyframes fadeInCard { to { opacity: 1; } }
     .card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
     .view { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .view:not(.active) { opacity: 0; transform: scale(0.97); pointer-events: none; position: absolute; width: 100%; }
     .view.active { opacity: 1; transform: scale(1); position: relative; }
     @keyframes blinkCaret { 50% { border-color: transparent; } }
+    
+    #gameScrollSentinel { transition: opacity 0.3s; }
   `;
   document.head.appendChild(style);
 
@@ -281,6 +287,9 @@
     const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
   }
 
+  // ======================
+  //  Game Player Controls
+  // ======================
   function openGame(game) { 
     const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
     if (!overlay || !frame) return; 
@@ -302,7 +311,9 @@
   function makeCard(item, type) {
     try {
         const card = document.createElement("div"); card.className = "card";
-        const img = document.createElement("img"); img.className = "thumb"; img.loading = "lazy"; img.alt = item.name; 
+        const img = document.createElement("img"); img.className = "thumb"; 
+        img.loading = "lazy"; // NATIVE LAZY LOADING PREVENTS LAG
+        img.alt = item.name; 
         img.src = `thumbs/${(item.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}.png`; 
         img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
         const body = document.createElement("div"); body.className = "cBody";
@@ -432,10 +443,17 @@
     }
   }
 
+  // ======================
+  //  INFINITE SCROLLING ENGINE 🚀
+  // ======================
   let GAMES = [];
   let gameList = [];
   let gameFilterTag = "All";
   let gameQuery = "";
+  
+  let gamesLoaded = 0;
+  const BATCH_SIZE = 30; // Loads 30 games at a time to kill lag
+
   const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
 
   function uniqueTags(list) { return ["All", ...Array.from(new Set(list.map(x => x.tag || "Misc"))).sort((a, b) => a.localeCompare(b))]; }
@@ -451,18 +469,43 @@
   let onGamePick = (t) => { 
     gameFilterTag = t; 
     renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick); 
-    renderGames(); 
+    renderGames(true); // Reset list back to 0 on new category
   };
 
-  function renderGames() {
+  // The new Master Render function with Chunking
+  function renderGames(reset = false) {
     const gameGrid = $("#gameGrid");
     if (!gameGrid) return; 
-    gameGrid.innerHTML = ""; 
+
+    // Search the ENTIRE database first
     const q = gameQuery.trim().toLowerCase();
     const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || ((g.name||"") + " " + (g.tag||"") + " " + (g.desc||"")).toLowerCase().includes(q)));
+
+    // If typing in search or changing tabs, wipe the board clean
+    if (reset) {
+        gameGrid.innerHTML = "";
+        gamesLoaded = 0;
+    }
+
+    // Grab the next 30 games
+    const nextBatch = filtered.slice(gamesLoaded, gamesLoaded + BATCH_SIZE);
+    
+    // Inject them
     const frag = document.createDocumentFragment();
-    filtered.forEach(g => frag.appendChild(makeCard(g, "game")));
+    nextBatch.forEach(g => frag.appendChild(makeCard(g, "game")));
     gameGrid.appendChild(frag);
+
+    gamesLoaded += nextBatch.length;
+
+    // Toggle the "Loading..." UI at the bottom
+    const sentinel = $("#gameScrollSentinel");
+    if (sentinel) {
+        if (gamesLoaded < filtered.length) {
+            sentinel.style.display = "flex";
+        } else {
+            sentinel.style.display = "none";
+        }
+    }
   }
 
   async function syncDatabase() {
@@ -479,9 +522,10 @@
     }
     gameList = [...GAMES];
     if($("#gameChips")) renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick);
-    renderGames();
+    renderGames(true); // Trigger initial batch load
   }
 
+  // Apps bypass Infinite Scroll because there are only a few
   const APPS = [
     { name:"ChatGPT", url:"https://studyquick.lbry.ru/storage/ag/apps/chatgpt/", category:"AI", desc:"Ask, write, learn, and explore." },
     { name:"CrazyGames", url:"https://studyquick.lbry.ru/storage/ag/apps/crazygames/", category:"Games", desc:"Find and play browser games." },
@@ -515,6 +559,16 @@
     const frag = document.createDocumentFragment(); list.forEach(a => frag.appendChild(makeCard(a, "app"))); appGrid.appendChild(frag);
   }
 
+  // Webhook Requests
+  function openReqModal() { 
+      const reqModal = $("#reqModal");
+      if(reqModal) { 
+          $("#reqFormArea").style.display = "block"; 
+          $("#reqSuccessArea").style.display = "none"; 
+          reqModal.classList.add("open"); 
+      } 
+  }
+  
   // Profile System
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
@@ -635,7 +689,7 @@
   }
 
   // ======================
-  //  THE MASTER INIT (100% DECOUPLED)
+  //  THE MASTER INIT
   // ======================
   function init() {
     try { runBootSequence(); } catch(e) { console.error("Boot Err:", e); }
@@ -652,11 +706,13 @@
       
       $("#shuffleGames")?.addEventListener("click", () => {
         for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
-        renderGames(); addXP(1);
+        renderGames(true); addXP(1); // Call renderGames with reset!
       });
       
       $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
-      $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(); });
+      
+      // SEARCH CALLS RESET TO PREVENT GLITCHES
+      $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(true); });
       $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
 
       $("#openReqBtnPlay")?.addEventListener("click", () => { 
@@ -700,6 +756,25 @@
       if($("#appChips")) renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); 
       renderApps();
       renderProfile(); 
+      
+      // INJECT AND OBSERVE THE INFINITE SCROLL SENTINEL
+      let sentinel = document.createElement("div");
+      sentinel.id = "gameScrollSentinel";
+      sentinel.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div> <span style="margin-left:12px; font-family:'Space Grotesk'; font-size: 15px;">Loading Network Modules...</span>`;
+      sentinel.style.cssText = "display:none; justify-content:center; align-items:center; padding:40px; width:100%; color:var(--brand1); font-weight:800; opacity: 0.8;";
+      
+      const glassPanel = document.querySelector("#view-play .glass-panel");
+      if (glassPanel) glassPanel.appendChild(sentinel);
+
+      const observer = new IntersectionObserver((entries) => {
+          if(entries[0].isIntersecting) {
+              // Add a tiny delay so the user actually sees the cool loading animation
+              setTimeout(() => renderGames(false), 300);
+          }
+      }, { root: document.querySelector(".main-wrap"), rootMargin: "100px" });
+
+      observer.observe(sentinel);
+
     } catch(e) { console.error("Data Load Err:", e); }
   }
   
