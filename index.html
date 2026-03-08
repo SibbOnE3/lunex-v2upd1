@@ -181,7 +181,9 @@
     .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
     .overlay.open { display:flex; }
     @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-    .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
+    
+    /* UI FIX: Added overflow: hidden to perfectly round the iframe corners inside the player */
+    .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); overflow: hidden; border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
     .overlay.open .player { transform: scale(1); }
     .playerbar { padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--bg1); border-bottom: 1px solid var(--stroke); }
     .frameWrap { flex:1; background: #000; }
@@ -193,6 +195,10 @@
   </style>
 </head>
 <body>
+
+  <div id="bootScreen" style="position:fixed; inset:0; background:#03050a; z-index:99999; display:flex; flex-direction:column; justify-content:center; padding:40px; font-family:monospace; color:var(--brand2); font-size:16px; transition:opacity 0.6s ease; pointer-events: none;">
+    <div id="bootText" style="text-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>
+  </div>
 
   <div class="bg-mesh"></div>
   <canvas id="particles-canvas"></canvas>
@@ -314,7 +320,8 @@
 
           <div class="cmd-box">
             <h2 class="cmd-title"><svg style="stroke: var(--brand2)"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Local Profile</h2>
-            <div id="profileBox"></div> </div>
+            <div id="profileBox"></div> 
+          </div>
         </div>
       </section>
 
@@ -391,7 +398,7 @@
         <div style="display:flex; gap: 10px;">
           <button class="ghost" id="fsBtn">Fullscreen</button>
           <a class="ghost linkbtn" id="newTabBtn" target="_blank" style="text-decoration: none;">New tab</a>
-          <button class="ghost" id="closeBtn" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5;">Close</button>
+          <button class="ghost" id="closeBtn" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5;">Close (Esc)</button>
         </div>
       </div>
       <div class="frameWrap"><iframe id="playerFrame" allow="fullscreen; autoplay" referrerpolicy="no-referrer"></iframe></div>

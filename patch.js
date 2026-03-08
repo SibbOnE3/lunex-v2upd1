@@ -3,35 +3,25 @@
   window.__LUNEX_PATCH_LOADED__ = true;
 
   // ======================
-  //  UI ANIMATIONS & CSS INJECTION (NEW)
+  //  UI ANIMATIONS & CSS INJECTION 
   // ======================
   const style = document.createElement('style');
   style.innerHTML = `
-    /* Smooth AI Chat Bubbles */
     .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(15px); }
     @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
-    
-    /* AI Typing Dots Animation */
     .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--brand1, #8b5cf6); border-radius: 50%; margin: 0 2px; animation: pulseDot 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulseDot { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
-    
-    /* Smooth Card Hover Effects */
     .card { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; }
     .card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
-    
-    /* View Switching Animation */
     .view { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .view:not(.active) { opacity: 0; transform: scale(0.97); pointer-events: none; position: absolute; width: 100%; }
     .view.active { opacity: 1; transform: scale(1); position: relative; }
-    
-    /* Typing Caret */
     @keyframes blinkCaret { 50% { border-color: transparent; } }
   `;
   document.head.appendChild(style);
 
-  // Kill old SW
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
       for(let registration of registrations) { registration.unregister(); }
@@ -46,14 +36,44 @@
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // ======================
-  //  V2 STEALTH SYSTEMS (Cloak & Disguise)
+  //  TERMINAL BOOT SEQUENCE
+  // ======================
+  function runBootSequence() {
+    const boot = $("#bootScreen");
+    if (!boot || sessionStorage.getItem("lunex_booted")) {
+      if(boot) boot.style.display = "none";
+      return;
+    }
+    const lines = [
+      "[INITIATING SECURE CONNECTION...]",
+      "[BYPASSING FIREWALL PROTOCOLS...]",
+      "[LOADING LUNEX V2 KERNEL...]",
+      "[ACCESS GRANTED]"
+    ];
+    const textDiv = $("#bootText");
+    let delay = 0;
+    lines.forEach((line) => {
+      setTimeout(() => { textDiv.innerHTML += line + "<br>"; }, delay);
+      delay += 400 + Math.random() * 300;
+    });
+    setTimeout(() => {
+      boot.style.opacity = "0";
+      setTimeout(() => boot.remove(), 600);
+      sessionStorage.setItem("lunex_booted", "true");
+    }, delay + 400);
+  }
+
+  // ======================
+  //  V2 STEALTH SYSTEMS 
   // ======================
   let panicKey = localStorage.getItem("lunex_panic_key") || "`";
   let panicTarget = localStorage.getItem("lunex_panic_target") || "https://classroom.google.com";
   let disguiseActive = localStorage.getItem("lunex_disguise") === "true";
 
+  // Escape key support to instantly close games
   window.addEventListener("keydown", (e) => {
     if (e.key === panicKey) { window.location.replace(panicTarget); }
+    if (e.key === "Escape" && $("#overlay")?.classList.contains("open")) { closeGame(); }
   });
 
   const defaultTitle = "Lunex";
@@ -79,7 +99,6 @@
     const disguiseToggle = $("#disguiseToggle");
     
     if(!bindBtn) return;
-
     bindBtn.textContent = panicKey;
     targetSelect.value = panicTarget;
     disguiseToggle.checked = disguiseActive;
@@ -113,7 +132,7 @@
   }
 
   // ======================
-  //  PREMIUM PARTICLE ENGINE (Constellation Effect)
+  //  PREMIUM PARTICLE ENGINE 
   // ======================
   const pCanvas = document.getElementById('particles-canvas');
   const ctx = pCanvas?.getContext('2d');
@@ -124,7 +143,7 @@
       width = pCanvas.width = window.innerWidth;
       height = pCanvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 60; i++) { // Increased particle count for connections
+      for (let i = 0; i < 70; i++) { 
           particles.push({
               x: Math.random() * width, y: Math.random() * height,
               r: Math.random() * 2 + 1, speed: Math.random() * 0.4 + 0.1, 
@@ -142,13 +161,11 @@
           p.y -= p.speed; p.x += Math.sin(p.angle) * 0.4; p.angle += 0.01;
           if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
           
-          // Draw Particle
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`; 
           ctx.shadowBlur = 12; ctx.shadowColor = "rgba(139, 92, 246, 0.8)"; 
           ctx.fill();
 
-          // Draw Constellation Lines
           for (let j = i + 1; j < particles.length; j++) {
               let p2 = particles[j];
               let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
@@ -193,9 +210,9 @@
   $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
 
   // ======================
-  //  XP & Toast
+  //  XP, PLAYTIME & TOAST
   // ======================
-  const LS = { XP: "lunex_xp", LV: "lunex_lv", NAME: "lunex_name", CHAT: "lunex_chat" };
+  const LS = { XP: "lunex_xp", LV: "lunex_lv", NAME: "lunex_name", CHAT: "lunex_chat", PLAYTIME: "lunex_playtime" };
   function getInt(key, d = 0) { const v = Number(localStorage.getItem(key)); return Number.isFinite(v) ? v : d; }
   function setInt(key, v) { localStorage.setItem(key, String(v | 0)); }
   function xpNeedForLevel(lv) { return 40 + (lv - 1) * 25 + Math.floor((lv - 1) * (lv - 1) * 2.2); }
@@ -226,23 +243,19 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.style.opacity = "0"; t.style.transform = "translateX(-50%) translateY(15px)"; }, 2500);
   }
 
-  // Secret Keylogger (Ads)
-  let secretBuffer = "";
-  window.addEventListener("keydown", (e) => {
-    if (e.key.length === 1 || e.key === "!") {
-      secretBuffer += e.key.toLowerCase();
-      if (secretBuffer.length > 15) secretBuffer = secretBuffer.slice(-15);
-      if (secretBuffer.endsWith("qwerty!")) { localStorage.setItem("lunex_no_ads", (Date.now() + 86400000).toString()); pulseToast("Ads disabled for 24 hours! 🤫"); secretBuffer = ""; }
-      if (secretBuffer.endsWith("!ytrewq")) { localStorage.removeItem("lunex_no_ads"); pulseToast("Ads re-enabled."); setTimeout(() => window.location.reload(), 1000); secretBuffer = ""; }
-    }
-  });
-
-  // Ads
-  const ADS = { popunder: "https://pl28684565.effectivegatecpm.com/7b/02/4d/7b024d68c6e7f7ed4a51201da278a294.js", socialBar: "https://pl28684568.effectivegatecpm.com/f8/68/be/f868be11846d9f9e4fc9d00b261b3cd3.js" };
-  function mountAds() {
-    if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
-    const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
-    const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
+  let ptTimer = null;
+  function startPlaytime() {
+    if(ptTimer) return;
+    ptTimer = setInterval(() => {
+      let mins = getInt(LS.PLAYTIME, 0) + 1;
+      setInt(LS.PLAYTIME, mins);
+      if($("#ptDisplay")) $("#ptDisplay").innerText = formatPT(mins);
+    }, 60000); // 1 minute
+  }
+  function stopPlaytime() { clearInterval(ptTimer); ptTimer = null; }
+  function formatPT(mins) {
+    if(mins < 60) return `${mins} mins`;
+    return `${Math.floor(mins/60)}h ${mins%60}m`;
   }
 
   // ======================
@@ -334,7 +347,17 @@
     { name:"Bullet Bros", url:"https://studyquick.lbry.ru/storage/ag/arsenic/bullet-bros/", tag:"Shooter", desc:"Physics-based platforming shooter with chaotic gunplay." },
     { name:"Crazy Bikes", url:"https://studyquick.lbry.ru/storage/ag/arsenic/crazy-bikes/", tag:"Racing", desc:"Perform stunts and race dirt bikes on crazy obstacle courses." },
     { name:"Crazy Cars", url:"https://studyquick.lbry.ru/storage/ag/arsenic/crazy-cars/", tag:"Cars", desc:"Drive fast, jump ramps, and collect stars in a 3D arena." },
-    { name:"Ragdoll Hit", url:"https://studyquick.lbry.ru/storage/ag/originals/ragdoll-hit/", tag:"Physics", desc:"Beat down enemies using floppy ragdoll physics and weapons." }
+    { name:"Ragdoll Hit", url:"https://studyquick.lbry.ru/storage/ag/originals/ragdoll-hit/", tag:"Physics", desc:"Beat down enemies using floppy ragdoll physics and weapons." },
+    // NEW MASSIVE DROP GAMES
+    { name:"Voxiom.io", url:"https://studyquick.lbry.ru/storage/ag/arsenic/voxiom-io/", tag:".io", desc:"Voxel battle royale and crafting survival." },
+    { name:"Bacon May Die", url:"https://studyquick.lbry.ru/storage/ag/arsenic/bacon-may-die/", tag:"Action", desc:"Pig fighting game with tons of weapons." },
+    { name:"Moto X3M", url:"https://studyquick.lbry.ru/storage/ag/arsenic/moto-x3m/", tag:"Racing", desc:"Classic motorcycle stunt and racing game." },
+    { name:"Vex 7", url:"https://studyquick.lbry.ru/storage/ag/arsenic/vex-7/", tag:"Platformer", desc:"Action platformer filled with deadly traps." },
+    { name:"Time Shooter 2", url:"https://studyquick.lbry.ru/storage/ag/arsenic/time-shooter-2/", tag:"Shooter", desc:"Time only moves when you move, similar to Superhot." },
+    { name:"EvoWorld.io", url:"https://studyquick.lbry.ru/storage/ag/arsenic/evoworld-io/", tag:".io", desc:"Evolve and survive in a multiplayer world." },
+    { name:"Rocket Soccer Derby", url:"https://studyquick.lbry.ru/storage/ag/arsenic/rocket-soccer-derby/", tag:"Sports", desc:"Rocket League style car soccer action." },
+    { name:"Tunnel Rush", url:"https://studyquick.lbry.ru/storage/ag/arsenic/tunnel-rush/", tag:"Arcade", desc:"Dodge obstacles at high speed through neon tunnels." },
+    { name:"OvO", url:"https://studyquick.lbry.ru/storage/ag/arsenic/ovo/", tag:"Platformer", desc:"Fast-paced parkour platforming." }
   ];
 
   function mergeByName(base, extra) {
@@ -343,7 +366,6 @@
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  // 👇 DYNAMIC ENGINE LOGIC BEGINS HERE 👇
   let GAMES = [];
   const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
 
@@ -358,21 +380,18 @@
       const response = await fetch(GITHUB_JSON_URL + "?nocache=" + Date.now());
       if (response.ok) {
         const remoteGames = await response.json();
-        GAMES = mergeByName(BASE_GAMES, remoteGames); // Merges Discord games with Base list
+        GAMES = mergeByName(BASE_GAMES, remoteGames); 
       } else {
         throw new Error("Network error");
       }
     } catch (e) {
-      console.warn("Using local backup...");
       GAMES = mergeByName(BASE_GAMES, EXTRA_GAMES);
     }
     
-    // Once downloaded, render the UI
     gameList = [...GAMES];
     if(gameChips) renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick);
     renderGames();
   }
-  // 👆 DYNAMIC ENGINE LOGIC ENDS HERE 👆
 
   const APPS = [
     { name:"ChatGPT", url:"https://studyquick.lbry.ru/storage/ag/apps/chatgpt/", category:"AI", desc:"Ask, write, learn, and explore." },
@@ -399,8 +418,20 @@
   function thumbFor(name) { return `thumbs/${slugify(name)}.png`; }
 
   const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
-  function openGame(game) { if (!overlay || !frame) return; pTitle.textContent = game.name; frame.src = game.url; $("#newTabBtn").href = game.url; overlay.classList.add("open"); addXP(3); }
-  function closeGame() { overlay?.classList.remove("open"); if (frame) frame.src = ""; }
+  function openGame(game) { 
+    if (!overlay || !frame) return; 
+    pTitle.textContent = game.name; 
+    frame.src = game.url; 
+    $("#newTabBtn").href = game.url; 
+    overlay.classList.add("open"); 
+    addXP(3); 
+    startPlaytime(); // Starts the clock!
+  }
+  function closeGame() { 
+    overlay?.classList.remove("open"); 
+    if (frame) frame.src = ""; 
+    stopPlaytime(); // Stops the clock!
+  }
   $("#closeBtn")?.addEventListener("click", closeGame);
   overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeGame(); });
   $("#fsBtn")?.addEventListener("click", async () => { try { if (frame?.requestFullscreen) await frame.requestFullscreen(); } catch { } });
@@ -493,10 +524,17 @@
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
     const name = localStorage.getItem(LS.NAME) || "Player";
+    const playtime = formatPT(getInt(LS.PLAYTIME, 0));
     profileBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:16px; margin-bottom: 20px;">
         <div style="width:60px; height:60px; border-radius:16px; display:grid; place-items:center; background:linear-gradient(135deg, var(--brand1), var(--brand3)); font-weight:900; font-size: 24px;">${String(name).slice(0, 1).toUpperCase()}</div>
-        <div><div style="font-weight:800; font-size:20px;">${escapeHtml(name)}</div><div style="color:var(--muted); font-size:13px;">Level ${getInt(LS.LV, 1)} • ${getInt(LS.XP, 0)} XP</div></div>
+        <div>
+          <div style="font-weight:800; font-size:20px;">${escapeHtml(name)}</div>
+          <div style="color:var(--muted); font-size:13px; margin-top:2px;">
+            Level ${getInt(LS.LV, 1)} • ${getInt(LS.XP, 0)} XP <br>
+            <span style="color: var(--brand2); font-weight:600;">⏱️ <span id="ptDisplay">${playtime}</span> Playtime</span>
+          </div>
+        </div>
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
         <input id="nameInput" class="search" style="margin:0; padding:10px 14px;" placeholder="Set nickname..." value="${escapeAttr(name)}" />
@@ -509,7 +547,7 @@
   function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
 
   // ======================
-  //  THE NEW LUNA AI ENGINE (WITH POST FIX & TYPING ANIMATIONS)
+  //  THE LUNA AI ENGINE
   // ======================
   function formatMarkdown(content) {
     return escapeHtml(content)
@@ -526,16 +564,15 @@
     log.appendChild(row);
     
     if (animateTyping) {
-        // Super smooth character-by-character typing effect
         let i = 0;
-        let speed = 15; // Speed in ms
+        let speed = 15;
         let interval = setInterval(() => {
             row.innerHTML = formatMarkdown(content.substring(0, i)) + "<span style='border-right: 2px solid var(--brand1); margin-left:2px; animation: blinkCaret 0.8s infinite;'></span>";
             log.scrollTop = log.scrollHeight;
             i++;
             if (i > content.length) {
                 clearInterval(interval);
-                row.innerHTML = formatMarkdown(content); // Remove caret when done
+                row.innerHTML = formatMarkdown(content);
             }
         }, speed);
     } else {
@@ -546,21 +583,12 @@
 
   function refreshChatLog() {
     const log = $("#chatLog"); if (!log) return; 
-    
     const bubbles = log.querySelectorAll('.chat-msg');
     bubbles.forEach(b => b.remove());
-
     const history = JSON.parse(localStorage.getItem(LS.CHAT) || "[]");
-    
-    if (history.length > 0 && $("#aiPrompts")) {
-      $("#aiPrompts").style.display = "none";
-    }
-
-    if (history.length === 0) {
-      appendBubble("assistant", "Hi there! I am Luna, your AI assistant for the Lunex Network. How can I help you today? ✨"); 
-    } else {
-      history.forEach(m => appendBubble(m.role, m.content));
-    }
+    if (history.length > 0 && $("#aiPrompts")) { $("#aiPrompts").style.display = "none"; }
+    if (history.length === 0) { appendBubble("assistant", "Hi there! I am Luna, your AI assistant for the Lunex Network. How can I help you today? ✨"); } 
+    else { history.forEach(m => appendBubble(m.role, m.content)); }
   }
 
   async function handleChatSend(overrideText = null) {
@@ -576,7 +604,6 @@
     appendBubble("user", text); 
     addXP(2); 
 
-    // Animated Thinking Indicator
     const log = $("#chatLog");
     const typingId = "typing-" + Date.now();
     const typingDiv = document.createElement("div");
@@ -588,8 +615,6 @@
 
     try {
       const selectedModel = $("#lunaModelSelect")?.value || "openai"; 
-      
-      // 🚀 THE BULLETPROOF POST REQUEST FIX
       const res = await fetch("https://text.pollinations.ai/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -608,8 +633,6 @@
       document.getElementById(typingId)?.remove();
       h.push({ role: "assistant", content: reply });
       localStorage.setItem(LS.CHAT, JSON.stringify(h.slice(-20))); 
-      
-      // Pass 'true' to trigger the new smooth typing animation
       appendBubble("assistant", reply, true);
 
     } catch (e) {
@@ -623,14 +646,12 @@
     refreshChatLog();
     $("#chatSend")?.addEventListener("click", () => handleChatSend());
     $("#chatInput")?.addEventListener("keydown", (e) => { if (e.key === "Enter") handleChatSend(); });
-    
-    $$(".prompt-pill").forEach(btn => {
-      btn.addEventListener("click", () => handleChatSend(btn.innerText));
-    });
+    $$(".prompt-pill").forEach(btn => { btn.addEventListener("click", () => handleChatSend(btn.innerText)); });
   }
 
   // Init
   function init() {
+    runBootSequence(); // Runs the terminal effect
     syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
     
     syncDatabase(); 
