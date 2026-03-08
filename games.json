@@ -52,5 +52,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/originals/slither/",
     "tag": "Arcade",
     "desc": "The most famous slither game in the world!"
+  },
+  {
+    "name": "Geohub",
+    "url": "https://www.geohub.gg/",
+    "tag": "Puzzle",
+    "desc": "Guess where in the world you are!"
   }
 ]
