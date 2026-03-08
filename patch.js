@@ -29,7 +29,7 @@
   }
 
   const DISCORD_LINK = "https://discord.gg/5Nw5sd7qTB"; 
-  const MOTD_TITLE = "Lunex V2 is Online 🚀";
+  const MOTD_TITLE = "Lunex V2.2 is Online 🚀";
   const MOTD_TEXT = "Welcome to the ultimate stealth experience. Check out the new Settings panel to set up your Panic Key and Tab Disguise!";
 
   const $ = (q, root = document) => root.querySelector(q);
@@ -46,13 +46,12 @@
       return;
     }
 
-    // Only display if the script actually successfully fires
     boot.style.display = "flex";
 
     const lines = [
       "[INITIATING SECURE CONNECTION...]",
       "[BYPASSING FIREWALL PROTOCOLS...]",
-      "[LOADING LUNEX V2 KERNEL...]",
+      "[LOADING LUNEX V2.2 KERNEL...]",
       "[ACCESS GRANTED]"
     ];
     
@@ -151,7 +150,6 @@
       height = pCanvas.height = window.innerHeight;
       particles = [];
       for (let i = 0; i < 75; i++) { 
-          // 50% chance of purple (139, 92, 246) or blue (14, 165, 233)
           let color = Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233';
           particles.push({
               x: Math.random() * width, y: Math.random() * height,
@@ -183,7 +181,6 @@
                   ctx.beginPath();
                   ctx.moveTo(p.x, p.y);
                   ctx.lineTo(p2.x, p2.y);
-                  // Connect lines using base purple, fading by distance
                   ctx.strokeStyle = `rgba(139, 92, 246, ${(1 - dist/120) * 0.3})`;
                   ctx.lineWidth = 0.8;
                   ctx.stroke();
@@ -197,8 +194,6 @@
   // ======================
   //  UI & Tabs
   // ======================
-  $$(".discord-link-btn").forEach(btn => btn.addEventListener("click", () => window.open(DISCORD_LINK, "_blank")));
-
   function checkDailyPopup() {
     const today = new Date().toDateString();
     if (localStorage.getItem("lunex_last_motd") !== today) {
@@ -218,7 +213,6 @@
     $$(".view").forEach(v => v.classList.toggle("active", v.id === `view-${key}`));
     addXP(1);
   }
-  $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
 
   // ======================
   //  XP, PLAYTIME & TOAST
@@ -267,6 +261,43 @@
   function formatPT(mins) {
     if(mins < 60) return `${mins} mins`;
     return `${Math.floor(mins/60)}h ${mins%60}m`;
+  }
+
+  // ======================
+  //  Game Player Controls
+  // ======================
+  function openGame(game) { 
+    const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
+    if (!overlay || !frame) return; 
+    pTitle.textContent = game.name; 
+    frame.src = game.url; 
+    const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
+    overlay.classList.add("open"); 
+    addXP(3); 
+    startPlaytime(); 
+  }
+
+  function closeGame() { 
+    const overlay = $("#overlay"); const frame = $("#playerFrame");
+    if(overlay) overlay.classList.remove("open"); 
+    if(frame) frame.src = ""; 
+    stopPlaytime(); 
+  }
+
+  function makeCard(item, type) {
+    const card = document.createElement("div"); card.className = "card";
+    const img = document.createElement("img"); img.className = "thumb"; img.loading = "lazy"; img.alt = item.name; 
+    img.src = thumbFor(item.name); 
+    img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
+    const body = document.createElement("div"); body.className = "cBody";
+    const name = document.createElement("div"); name.className = "cName"; name.textContent = item.name;
+    const desc = document.createElement("p"); desc.className = "cDesc"; desc.textContent = item.desc || "";
+    const meta = document.createElement("div"); meta.className = "cMeta";
+    const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = type === "game" ? item.tag : item.category;
+    meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
+    if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
+    else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
+    return card;
   }
 
   // ======================
@@ -377,13 +408,40 @@
   }
 
   let GAMES = [];
+  let gameList = [];
+  let gameFilterTag = "All";
+  let gameQuery = "";
   const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
+
+  function slugify(name) { return name.toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""); }
+  function thumbFor(name) { return `thumbs/${slugify(name)}.png`; }
+
+  function uniqueTags(list) { return ["All", ...Array.from(new Set(list.map(x => x.tag))).sort((a, b) => a.localeCompare(b))]; }
+  
+  function renderChips(container, tags, active, onPick) {
+    if (!container) return; container.innerHTML = "";
+    tags.forEach(t => {
+      const c = document.createElement("button"); c.className = "chip" + (t === active ? " active" : "");
+      c.textContent = t; c.onclick = () => onPick(t); container.appendChild(c);
+    });
+  }
 
   let onGamePick = (t) => { 
     gameFilterTag = t; 
-    renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick); 
+    renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick); 
     renderGames(); 
   };
+
+  function renderGames() {
+    const gameGrid = $("#gameGrid");
+    if (!gameGrid) return; 
+    gameGrid.innerHTML = ""; 
+    const q = gameQuery.trim().toLowerCase();
+    const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || (g.name + " " + g.tag + " " + g.desc).toLowerCase().includes(q)));
+    const frag = document.createDocumentFragment();
+    filtered.forEach(g => frag.appendChild(makeCard(g, "game")));
+    gameGrid.appendChild(frag);
+  }
 
   async function syncDatabase() {
     try {
@@ -397,9 +455,8 @@
     } catch (e) {
       GAMES = mergeByName(BASE_GAMES, EXTRA_GAMES);
     }
-    
     gameList = [...GAMES];
-    if(gameChips) renderChips(gameChips, uniqueTags(GAMES), gameFilterTag, onGamePick);
+    if($("#gameChips")) renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick);
     renderGames();
   }
 
@@ -424,112 +481,28 @@
     { name:"YouTube", url:"https://studyquick.lbry.ru/static/google-embed.html#https://youtube.com", category:"Video", desc:"Watch videos, creators, and clips." }
   ].sort((a, b) => a.name.localeCompare(b.name));
 
-  function slugify(name) { return name.toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""); }
-  function thumbFor(name) { return `thumbs/${slugify(name)}.png`; }
-
-  const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
-  function openGame(game) { 
-    if (!overlay || !frame) return; 
-    pTitle.textContent = game.name; 
-    frame.src = game.url; 
-    $("#newTabBtn").href = game.url; 
-    overlay.classList.add("open"); 
-    addXP(3); 
-    startPlaytime(); 
-  }
-  function closeGame() { 
-    overlay?.classList.remove("open"); 
-    if (frame) frame.src = ""; 
-    stopPlaytime(); 
-  }
-  $("#closeBtn")?.addEventListener("click", closeGame);
-  overlay?.addEventListener("click", (e) => { if (e.target === overlay) closeGame(); });
-  $("#fsBtn")?.addEventListener("click", async () => { try { if (frame?.requestFullscreen) await frame.requestFullscreen(); } catch { } });
-
-  function makeCard(item, type) {
-    const card = document.createElement("div"); card.className = "card";
-    const img = document.createElement("img"); img.className = "thumb"; img.loading = "lazy"; img.alt = item.name; 
-    img.src = thumbFor(item.name); 
-    img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
-    const body = document.createElement("div"); body.className = "cBody";
-    const name = document.createElement("div"); name.className = "cName"; name.textContent = item.name;
-    const desc = document.createElement("p"); desc.className = "cDesc"; desc.textContent = item.desc || "";
-    const meta = document.createElement("div"); meta.className = "cMeta";
-    const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = type === "game" ? item.tag : item.category;
-    meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
-    if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
-    else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
-    return card;
-  }
-
-  const gameGrid = $("#gameGrid"); const gameSearch = $("#gameSearch"); const gameChips = $("#gameChips");
-  let gameFilterTag = "All"; let gameQuery = ""; let gameList = [...GAMES];
-  function uniqueTags(list) { return ["All", ...Array.from(new Set(list.map(x => x.tag))).sort((a, b) => a.localeCompare(b))]; }
-  
-  function renderChips(container, tags, active, onPick) {
-    if (!container) return; container.innerHTML = "";
-    tags.forEach(t => {
-      const c = document.createElement("button"); c.className = "chip" + (t === active ? " active" : "");
-      c.textContent = t; c.onclick = () => onPick(t); container.appendChild(c);
-    });
-  }
-
-  function renderGames() {
-    if (!gameGrid) return; gameGrid.innerHTML = ""; const q = gameQuery.trim().toLowerCase();
-    const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || (g.name + " " + g.tag + " " + g.desc).toLowerCase().includes(q)));
-    const frag = document.createDocumentFragment();
-    filtered.forEach(g => frag.appendChild(makeCard(g, "game")));
-    gameGrid.appendChild(frag);
-  }
-
-  $("#shuffleGames")?.addEventListener("click", () => {
-    for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
-    renderGames(); addXP(1);
-  });
-  
-  $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
-  gameSearch?.addEventListener("input", () => { gameQuery = gameSearch.value; renderGames(); });
-
-  const appGrid = $("#appGrid"); const appSearch = $("#appSearch"); const appChips = $("#appChips");
   let appFilter = "All"; let appQuery = "";
   function uniqueCats(list) { return ["All", ...Array.from(new Set(list.map(x => x.category))).sort((a, b) => a.localeCompare(b))]; }
   
   function renderApps() {
-    if (!appGrid) return; appGrid.innerHTML = ""; const q = appQuery.trim().toLowerCase();
+    const appGrid = $("#appGrid");
+    if (!appGrid) return; 
+    appGrid.innerHTML = ""; 
+    const q = appQuery.trim().toLowerCase();
     const list = APPS.filter(a => (appFilter === "All" || a.category === appFilter) && (!q || (a.name + " " + a.category + " " + a.desc).toLowerCase().includes(q)));
     const frag = document.createDocumentFragment(); list.forEach(a => frag.appendChild(makeCard(a, "app"))); appGrid.appendChild(frag);
   }
-  appSearch?.addEventListener("input", () => { appQuery = appSearch.value; renderApps(); });
 
   // Webhook Requests
-  const reqModal = $("#reqModal");
-  function openReqModal() { if(reqModal) { $("#reqFormArea").style.display = "block"; $("#reqSuccessArea").style.display = "none"; reqModal.classList.add("open"); } }
-  $("#openReqBtnPlay")?.addEventListener("click", openReqModal);
-  $("#cancelReq")?.addEventListener("click", () => { if(reqModal) reqModal.classList.remove("open"); });
-  $("#closeReqSuccessBtn")?.addEventListener("click", () => { if(reqModal) reqModal.classList.remove("open"); });
+  function openReqModal() { 
+      const reqModal = $("#reqModal");
+      if(reqModal) { 
+          $("#reqFormArea").style.display = "block"; 
+          $("#reqSuccessArea").style.display = "none"; 
+          reqModal.classList.add("open"); 
+      } 
+  }
   
-  $("#submitReq")?.addEventListener("click", async () => {
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1479177395582799882/nF3uzNjp9flRFDmleaDZ6BzEXZ14uqjH3xGZTf0Bd01TU6UsnYoLPNZADNeXCTX7EsSI"; 
-    const name = $("#reqGameName").value.trim(); const notes = $("#reqGameDesc").value.trim();
-    if (!name) return pulseToast("Please enter a game name!");
-    const now = Date.now();
-    if (localStorage.getItem("lastGameRequest") && now - localStorage.getItem("lastGameRequest") < 300000) return pulseToast("You are doing that too fast.");
-    
-    $("#submitReq").innerText = "Sending...";
-    try {
-      const res = await fetch(WEBHOOK_URL, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ embeds: [{ title: "🔔 Game Request", description: `**Game:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
-      });
-      if (res.ok) {
-          $("#reqGameName").value = ""; $("#reqGameDesc").value = "";
-          $("#reqFormArea").style.display = "none"; $("#reqSuccessArea").style.display = "block";
-          localStorage.setItem("lastGameRequest", now);
-      } else pulseToast("Network error.");
-    } catch(e) { pulseToast("Error sending request."); }
-    $("#submitReq").innerText = "Send Request";
-  });
-
   // Profile System
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
@@ -574,16 +547,12 @@
     log.appendChild(row);
     
     if (animateTyping) {
-        let i = 0;
-        let speed = 15;
+        let i = 0; let speed = 15;
         let interval = setInterval(() => {
             row.innerHTML = formatMarkdown(content.substring(0, i)) + "<span style='border-right: 2px solid var(--brand1); margin-left:2px; animation: blinkCaret 0.8s infinite;'></span>";
             log.scrollTop = log.scrollHeight;
             i++;
-            if (i > content.length) {
-                clearInterval(interval);
-                row.innerHTML = formatMarkdown(content);
-            }
+            if (i > content.length) { clearInterval(interval); row.innerHTML = formatMarkdown(content); }
         }, speed);
     } else {
         row.innerHTML = formatMarkdown(content);
@@ -626,8 +595,7 @@
     try {
       const selectedModel = $("#lunaModelSelect")?.value || "openai"; 
       const res = await fetch("https://text.pollinations.ai/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
             { role: "system", content: "You are Luna, the cool AI mascot for Lunex V2. Keep responses short, helpful, and chill." },
@@ -639,12 +607,10 @@
 
       if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
       const reply = await res.text(); 
-
       document.getElementById(typingId)?.remove();
       h.push({ role: "assistant", content: reply });
       localStorage.setItem(LS.CHAT, JSON.stringify(h.slice(-20))); 
       appendBubble("assistant", reply, true);
-
     } catch (e) {
       console.error("🔴 LUNA AI CRASH REPORT:", e); 
       document.getElementById(typingId)?.remove();
@@ -652,26 +618,67 @@
     }
   }
 
-  function initChat() {
+  // ======================
+  //  THE MASTER INIT (Race Condition Fix)
+  // ======================
+  function init() {
+    runBootSequence(); 
+    syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
+
+    $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
+    $$(".discord-link-btn").forEach(btn => btn.addEventListener("click", () => window.open(DISCORD_LINK, "_blank")));
+
+    $("#closeBtn")?.addEventListener("click", closeGame);
+    $("#overlay")?.addEventListener("click", (e) => { if (e.target === $("#overlay")) closeGame(); });
+    $("#fsBtn")?.addEventListener("click", async () => { try { if ($("#playerFrame")?.requestFullscreen) await $("#playerFrame").requestFullscreen(); } catch { } });
+    
+    $("#shuffleGames")?.addEventListener("click", () => {
+      for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
+      renderGames(); addXP(1);
+    });
+    
+    $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
+    
+    $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(); });
+    $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
+
+    $("#openReqBtnPlay")?.addEventListener("click", openReqModal);
+    $("#cancelReq")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
+    $("#closeReqSuccessBtn")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
+    
+    $("#submitReq")?.addEventListener("click", async () => {
+      const WEBHOOK_URL = "https://discord.com/api/webhooks/1479177395582799882/nF3uzNjp9flRFDmleaDZ6BzEXZ14uqjH3xGZTf0Bd01TU6UsnYoLPNZADNeXCTX7EsSI"; 
+      const name = $("#reqGameName").value.trim(); const notes = $("#reqGameDesc").value.trim();
+      if (!name) return pulseToast("Please enter a game name!");
+      const now = Date.now();
+      if (localStorage.getItem("lastGameRequest") && now - localStorage.getItem("lastGameRequest") < 300000) return pulseToast("You are doing that too fast.");
+      
+      $("#submitReq").innerText = "Sending...";
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ embeds: [{ title: "🔔 Game Request", description: `**Game:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
+        });
+        if (res.ok) {
+            $("#reqGameName").value = ""; $("#reqGameDesc").value = "";
+            $("#reqFormArea").style.display = "none"; $("#reqSuccessArea").style.display = "block";
+            localStorage.setItem("lastGameRequest", now);
+        } else pulseToast("Network error.");
+      } catch(e) { pulseToast("Error sending request."); }
+      $("#submitReq").innerText = "Send Request";
+    });
+
     refreshChatLog();
     $("#chatSend")?.addEventListener("click", () => handleChatSend());
     $("#chatInput")?.addEventListener("keydown", (e) => { if (e.key === "Enter") handleChatSend(); });
     $$(".prompt-pill").forEach(btn => { btn.addEventListener("click", () => handleChatSend(btn.innerText)); });
-  }
 
-  // Init
-  function init() {
-    runBootSequence(); 
-    syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
-    
     syncDatabase(); 
-    
-    const onAppPick = (t) => { appFilter = t; renderChips(appChips, uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
-    if(appChips) renderChips(appChips, uniqueCats(APPS), appFilter, onAppPick); 
+    const onAppPick = (t) => { appFilter = t; renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
+    if($("#appChips")) renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); 
     renderApps();
-    
     renderProfile(); 
-    initChat();
   }
+  
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
