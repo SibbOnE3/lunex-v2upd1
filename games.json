@@ -46,5 +46,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/echo/blockpost/",
     "tag": "Multiplayer",
     "desc": "Action-packed multiplayer online gaming experience where players play different modes against each other."
+  },
+  {
+    "name": "Slither.io",
+    "url": "https://studyquick.lbry.ru/storage/ag/originals/slither/",
+    "tag": "Arcade",
+    "desc": "The most famous slither game in the world!"
   }
 ]
