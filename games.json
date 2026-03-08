@@ -106,5 +106,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/table-tennis-world-tour/",
     "tag": "Arcade",
     "desc": "A thrilling sports game where you compete in table tennis matches against various opponents."
+  },
+  {
+    "name": "Rooftop Snipers",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/rooftop-snipers/",
+    "tag": "Shooter",
+    "desc": "A pixel-style shooting game where you have to shoot famous characters off of the roof"
   }
 ]
