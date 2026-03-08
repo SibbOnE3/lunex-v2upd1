@@ -94,5 +94,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/apps/geforce/",
     "tag": "Shooter",
     "desc": "Powered by Nvidia!"
+  },
+  {
+    "name": "GeoDash 2",
+    "url": "https://studyquick.lbry.ru/storage/ag/gn/27.html",
+    "tag": "Platformer",
+    "desc": "Incase the 1st doesn't work"
   }
 ]
