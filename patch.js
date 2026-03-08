@@ -2,6 +2,35 @@
   if (window.__LUNEX_PATCH_LOADED__) return;
   window.__LUNEX_PATCH_LOADED__ = true;
 
+  // ======================
+  //  UI ANIMATIONS & CSS INJECTION (NEW)
+  // ======================
+  const style = document.createElement('style');
+  style.innerHTML = `
+    /* Smooth AI Chat Bubbles */
+    .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(15px); }
+    @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
+    
+    /* AI Typing Dots Animation */
+    .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--brand1, #8b5cf6); border-radius: 50%; margin: 0 2px; animation: pulseDot 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulseDot { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
+    
+    /* Smooth Card Hover Effects */
+    .card { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; }
+    .card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
+    
+    /* View Switching Animation */
+    .view { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .view:not(.active) { opacity: 0; transform: scale(0.97); pointer-events: none; position: absolute; width: 100%; }
+    .view.active { opacity: 1; transform: scale(1); position: relative; }
+    
+    /* Typing Caret */
+    @keyframes blinkCaret { 50% { border-color: transparent; } }
+  `;
+  document.head.appendChild(style);
+
   // Kill old SW
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -84,7 +113,7 @@
   }
 
   // ======================
-  //  THE PARTICLE ENGINE
+  //  PREMIUM PARTICLE ENGINE (Constellation Effect)
   // ======================
   const pCanvas = document.getElementById('particles-canvas');
   const ctx = pCanvas?.getContext('2d');
@@ -95,23 +124,44 @@
       width = pCanvas.width = window.innerWidth;
       height = pCanvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 60; i++) { // Increased particle count for connections
           particles.push({
               x: Math.random() * width, y: Math.random() * height,
-              r: Math.random() * 2 + 0.5, speed: Math.random() * 0.5 + 0.1, 
-              angle: Math.random() * Math.PI * 2, alpha: Math.random() * 0.5 + 0.1 
+              r: Math.random() * 2 + 1, speed: Math.random() * 0.4 + 0.1, 
+              angle: Math.random() * Math.PI * 2, alpha: Math.random() * 0.6 + 0.2 
           });
       }
   }
+
   function drawParticles() {
       if(!ctx) return;
       ctx.clearRect(0, 0, width, height);
-      particles.forEach(p => {
-          p.y -= p.speed; p.x += Math.sin(p.angle) * 0.3; p.angle += 0.01;
+      
+      for (let i = 0; i < particles.length; i++) {
+          let p = particles[i];
+          p.y -= p.speed; p.x += Math.sin(p.angle) * 0.4; p.angle += 0.01;
           if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+          
+          // Draw Particle
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`; ctx.shadowBlur = 10; ctx.shadowColor = "rgba(139, 92, 246, 0.5)"; ctx.fill();
-      });
+          ctx.fillStyle = `rgba(139, 92, 246, ${p.alpha})`; 
+          ctx.shadowBlur = 12; ctx.shadowColor = "rgba(139, 92, 246, 0.8)"; 
+          ctx.fill();
+
+          // Draw Constellation Lines
+          for (let j = i + 1; j < particles.length; j++) {
+              let p2 = particles[j];
+              let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+              if (dist < 110) {
+                  ctx.beginPath();
+                  ctx.moveTo(p.x, p.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  ctx.strokeStyle = `rgba(139, 92, 246, ${(1 - dist/110) * 0.25})`;
+                  ctx.lineWidth = 0.6;
+                  ctx.stroke();
+              }
+          }
+      }
       requestAnimationFrame(drawParticles);
   }
   if(pCanvas){ window.addEventListener('resize', initParticles); initParticles(); drawParticles(); }
@@ -459,36 +509,49 @@
   function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
 
   // ======================
-  //  THE NEW LUNA AI ENGINE (WITH DIAGNOSTICS)
+  //  THE NEW LUNA AI ENGINE (WITH POST FIX & TYPING ANIMATIONS)
   // ======================
-  function appendBubble(role, content) {
-    const log = $("#chatLog"); if (!log) return;
-    
-    // Convert basic markdown to HTML for better looking responses
-    let formattedContent = escapeHtml(content)
+  function formatMarkdown(content) {
+    return escapeHtml(content)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
+  }
 
+  function appendBubble(role, content, animateTyping = false) {
+    const log = $("#chatLog"); if (!log) return;
     const row = document.createElement("div"); 
     row.className = `chat-msg ${role}`;
-    row.innerHTML = formattedContent;
+    log.appendChild(row);
     
-    log.appendChild(row); 
-    log.scrollTop = log.scrollHeight;
+    if (animateTyping) {
+        // Super smooth character-by-character typing effect
+        let i = 0;
+        let speed = 15; // Speed in ms
+        let interval = setInterval(() => {
+            row.innerHTML = formatMarkdown(content.substring(0, i)) + "<span style='border-right: 2px solid var(--brand1); margin-left:2px; animation: blinkCaret 0.8s infinite;'></span>";
+            log.scrollTop = log.scrollHeight;
+            i++;
+            if (i > content.length) {
+                clearInterval(interval);
+                row.innerHTML = formatMarkdown(content); // Remove caret when done
+            }
+        }, speed);
+    } else {
+        row.innerHTML = formatMarkdown(content);
+        log.scrollTop = log.scrollHeight;
+    }
   }
 
   function refreshChatLog() {
     const log = $("#chatLog"); if (!log) return; 
     
-    // Clear out any old bubbles but KEEP the watermark inside the log
     const bubbles = log.querySelectorAll('.chat-msg');
     bubbles.forEach(b => b.remove());
 
     const history = JSON.parse(localStorage.getItem(LS.CHAT) || "[]");
     
-    // If we have history, hide the prompt pills so the UI is clean
     if (history.length > 0 && $("#aiPrompts")) {
       $("#aiPrompts").style.display = "none";
     }
@@ -513,27 +576,31 @@
     appendBubble("user", text); 
     addXP(2); 
 
-    // Create the "thinking" indicator
+    // Animated Thinking Indicator
     const log = $("#chatLog");
     const typingId = "typing-" + Date.now();
     const typingDiv = document.createElement("div");
     typingDiv.id = typingId;
     typingDiv.className = "chat-msg bot";
-    typingDiv.innerHTML = `<span style="opacity: 0.5; font-style: italic;">Luna is thinking...</span>`;
+    typingDiv.innerHTML = `<div style="display:flex; align-items:center; height:18px;"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
     log.appendChild(typingDiv);
     log.scrollTop = log.scrollHeight;
 
-try {
-      const selectedModel = $("#lunaModelSelect")?.value || "openai"; // "openai" is very stable
-
-      // Simplify the prompt to avoid the 404 error
-      // We just send the last message directly to keep the URL clean
-      const userMessage = text;
+    try {
+      const selectedModel = $("#lunaModelSelect")?.value || "openai"; 
       
-      // NEW BULLETPROOF URL FORMAT
-      const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(userMessage)}?model=${selectedModel}&system=${encodeURIComponent("You are Luna, the chill AI for Lunex V2. Keep it short.")}`;
-
-      const res = await fetch(apiUrl);
+      // 🚀 THE BULLETPROOF POST REQUEST FIX
+      const res = await fetch("https://text.pollinations.ai/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: "You are Luna, the cool AI mascot for Lunex V2. Keep responses short, helpful, and chill." },
+            ...h.map(msg => ({ role: msg.role, content: msg.content }))
+          ],
+          model: selectedModel
+        })
+      });
 
       if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
       const reply = await res.text(); 
@@ -541,7 +608,9 @@ try {
       document.getElementById(typingId)?.remove();
       h.push({ role: "assistant", content: reply });
       localStorage.setItem(LS.CHAT, JSON.stringify(h.slice(-20))); 
-      appendBubble("assistant", reply);
+      
+      // Pass 'true' to trigger the new smooth typing animation
+      appendBubble("assistant", reply, true);
 
     } catch (e) {
       console.error("🔴 LUNA AI CRASH REPORT:", e); 
@@ -564,7 +633,6 @@ try {
   function init() {
     syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
     
-    // Fires the dynamic database fetch
     syncDatabase(); 
     
     const onAppPick = (t) => { appFilter = t; renderChips(appChips, uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
