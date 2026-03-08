@@ -118,5 +118,12 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/turbo-moto-racer/",
     "tag": "Racing",
     "desc": "Speed through traffic, complete missions, and upgrade your bike."
+  },
+  {
+    "name": "Lunex.io",
+    "url": "games/lunex-io.html",
+    "tag": ".io",
+    "desc": "Absorb data, avoid viruses, and become the biggest node in the network."
   }
+
 ]

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunex.io</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;800;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Hide ALL Scrollbars but keep functionality */
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body { margin: 0; overflow: hidden; background-color: #03050a; color: white; font-family: 'Inter', sans-serif; user-select: none; }
+        canvas { display: block; cursor: none; }
+        
+        /* Game HUD */
+        #hud { position: absolute; top: 20px; left: 20px; z-index: 5; display: none; flex-direction: column; gap: 8px; width: 220px; pointer-events: none; }
+        .hud-text { font-size: 18px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.8); background: rgba(15, 20, 35, 0.7); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .highlight { color: #8b5cf6; }
+        .coin-text { color: #facc15; }
+
+        /* Menus */
+        .overlay { position: absolute; inset: 0; background: rgba(3, 5, 10, 0.8); backdrop-filter: blur(16px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.4s ease; }
+        .menu-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 800px; animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); padding: 20px; }
+        
+        .title { font-family: 'Space Grotesk'; font-size: 90px; font-weight: 900; margin: 0 0 5px; background: linear-gradient(135deg, #8b5cf6, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: float 4s ease-in-out infinite; text-transform: uppercase; letter-spacing: -2px; }
+        .subtitle { font-size: 18px; color: rgba(255,255,255,0.6); margin-bottom: 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 4px; }
+        
+        .interaction-zone { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
+        .stat-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 16px 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); font-weight: 800; font-size: 18px; }
+        
+        input { width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.15); padding: 18px; border-radius: 16px; color: white; font-size: 20px; font-family: 'Inter'; text-align: center; font-weight: 800; outline: none; transition: 0.3s; }
+        input:focus { border-color: #8b5cf6; box-shadow: 0 0 25px rgba(139, 92, 246, 0.4); background: rgba(0,0,0,0.8); }
+        
+        .btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none; border-radius: 16px; color: white; font-size: 18px; font-weight: 900; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4); font-family: 'Space Grotesk'; text-transform: uppercase; letter-spacing: 1px; }
+        .btn:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6); filter: brightness(1.15); }
+        .btn-gold { background: linear-gradient(135deg, #facc15, #d97706); box-shadow: 0 10px 30px rgba(250, 204, 21, 0.3); color: #291c0e; }
+        .btn-gold:hover { box-shadow: 0 15px 40px rgba(250, 204, 21, 0.5); }
+        .btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4); }
+
+        /* Premium Tabbed Shop UI */
+        #shopMenu { display: none; flex-direction: column; width: 100%; max-width: 1000px; height: 85vh; background: rgba(15, 20, 35, 0.85); border-radius: 24px; border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 40px 100px rgba(0,0,0,0.9); padding: 30px; box-sizing: border-box; animation: slideUp 0.4s ease; }
+        .shop-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px; }
+        .shop-title { font-family: 'Space Grotesk'; font-size: 32px; font-weight: 900; margin: 0; color: white; }
+        .shop-coins { font-size: 24px; font-weight: 800; color: #facc15; display: flex; align-items: center; gap: 8px; }
+        
+        .shop-tabs { display: flex; gap: 12px; margin-bottom: 20px; }
+        .shop-tab { flex: 1; padding: 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: rgba(255,255,255,0.6); font-weight: 800; cursor: pointer; transition: 0.2s; font-family: 'Space Grotesk'; font-size: 18px; text-transform: uppercase; }
+        .shop-tab.active { background: rgba(139, 92, 246, 0.2); border-color: #8b5cf6; color: white; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); }
+        .shop-tab:hover:not(.active) { background: rgba(255,255,255,0.1); color: white; }
+
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; overflow-y: auto; max-height: 100%; padding-bottom: 20px;}
+        
+        .shop-item { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; min-height: 160px; }
+        .shop-item:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-3px); }
+        .shop-item.equipped { border-color: #10b981; background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); }
+        .item-name { font-weight: 800; font-size: 18px; margin-bottom: 5px; }
+        .item-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 15px; line-height: 1.4; }
+        
+        .buy-btn { padding: 12px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; font-family: 'Inter'; text-transform: uppercase; font-size: 13px; }
+        .buy-btn.can-buy { background: #facc15; color: #000; box-shadow: 0 4px 10px rgba(250, 204, 21, 0.3); }
+        .buy-btn.can-buy:hover { background: #eab308; }
+        .buy-btn.equipped { background: #10b981; color: #fff; }
+        .buy-btn.owned { background: #374151; color: #fff; }
+        .buy-btn.owned:hover { background: #4b5563; }
+        .buy-btn.broke { background: #1f2937; color: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <div class="hud-text">Mass: <span id="scoreDisplay" class="highlight">15</span></div>
+        <div class="hud-text" style="font-size: 16px;">Coins: <span id="hudCoins" class="coin-text">0</span></div>
+        <div class="hud-text" style="font-size: 14px; padding: 12px 20px;">
+            Boost Engine
+            <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.6); border-radius: 4px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                <div id="staminaBar" style="width: 100%; height: 100%; background: #0ea5e9; box-shadow: 0 0 10px #0ea5e9; transition: width 0.1s linear, background 0.2s;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainMenu" class="overlay">
+        <div class="menu-container" id="menuHome">
+            <h1 class="title">Lunex.io</h1>
+            <div class="subtitle">Eat. Grow. Dominate.</div>
+            
+            <div class="interaction-zone">
+                <div class="stat-row">
+                    <span style="color: rgba(255,255,255,0.6)">Data Coins</span>
+                    <span id="menuCoins" class="coin-text">0</span>
+                </div>
+                <div class="stat-row">
+                    <span style="color: rgba(255,255,255,0.6)">Top Mass</span>
+                    <span id="menuHighscore" style="color: #10b981;">0</span>
+                </div>
+                
+                <input type="text" id="playerNameInput" placeholder="Enter your alias..." maxlength="14" autocomplete="off">
+                <button class="btn" onclick="startGame()">Initiate Link</button>
+                <button class="btn btn-gold" onclick="openShop()">Black Market (Shop)</button>
+            </div>
+        </div>
+
+        <div id="shopMenu">
+            <div class="shop-header">
+                <h2 class="shop-title">Black Market</h2>
+                <div class="shop-coins">🪙 <span id="shopCoinDisplay">0</span></div>
+            </div>
+            
+            <div class="shop-tabs">
+                <button class="shop-tab active" id="tab-trails" onclick="setShopTab('trails')">Visual Trails</button>
+                <button class="shop-tab" id="tab-worlds" onclick="setShopTab('worlds')">System Worlds</button>
+            </div>
+
+            <div class="shop-grid" id="trailGrid"></div>
+            <div class="shop-grid" id="worldGrid" style="display: none;"></div>
+
+            <button class="btn" style="margin-top: 20px;" onclick="closeShop()">Return to Menu</button>
+        </div>
+    </div>
+
+    <div id="gameOverScreen" class="overlay" style="display: none;">
+        <div class="menu-container">
+            <h1 class="title" style="background: linear-gradient(135deg, #ef4444, #f59e0b); -webkit-background-clip: text;">TERMINATED</h1>
+            <div class="subtitle">Your data was absorbed.</div>
+            
+            <div class="interaction-zone">
+                <div class="stat-row">
+                    <span style="color: rgba(255,255,255,0.6)">Final Mass</span>
+                    <span id="finalScore" style="color: white;">0</span>
+                </div>
+                <div class="stat-row">
+                    <span style="color: rgba(255,255,255,0.6)">Coins Earned</span>
+                    <span id="earnedCoins" class="coin-text">+0</span>
+                </div>
+                <button class="btn btn-red" onclick="returnToMenu()">Return to Grid</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener("resize", resize);
+        resize();
+
+        // --- REALISTIC BOT NAMES ---
+        const BOT_NAMES = [
+            "Terminator", "Shadow", "Glitch", "Vortex", "Luna", "Sniper", "Ghost", "Neo", "Zero", "Apex", 
+            "Nova", "Titan", "Pulse", "Kraken", "Reaper", "Phantom", "Jester", "Ninja", "Cobra", "Venom", 
+            "Hydra", "Wraith", "Spectre", "Odin", "Dragon", "Cyber", "Void", "Echo", "Havoc", "Ronin"
+        ];
+
+        // --- DATA & ECONOMY ENGINE ---
+        let gameState = "menu"; 
+        let score = 15;
+        let sessionCoins = 0;
+
+        let highScore = parseInt(localStorage.getItem("lunex_io_highscore")) || 0;
+        let totalCoins = parseInt(localStorage.getItem("lunex_io_coins")) || 0;
+        let playerName = localStorage.getItem("lunex_io_name") || "Guest";
+        
+        let unlockedTrails = JSON.parse(localStorage.getItem("lunex_io_utrails")) || ["None"];
+        let unlockedWorlds = JSON.parse(localStorage.getItem("lunex_io_uworlds")) || ["Neon Grid"];
+        let equippedTrail = localStorage.getItem("lunex_io_etrail") || "None";
+        let equippedWorld = localStorage.getItem("lunex_io_eworld") || "Neon Grid";
+
+        function saveData() {
+            localStorage.setItem("lunex_io_highscore", highScore);
+            localStorage.setItem("lunex_io_coins", totalCoins);
+            localStorage.setItem("lunex_io_utrails", JSON.stringify(unlockedTrails));
+            localStorage.setItem("lunex_io_uworlds", JSON.stringify(unlockedWorlds));
+            localStorage.setItem("lunex_io_etrail", equippedTrail);
+            localStorage.setItem("lunex_io_eworld", equippedWorld);
+        }
+
+        // --- THEMES & SHOP ITEMS ---
+        const THEMES = {
+            "Neon Grid": { bg: "#03050a", grid: "rgba(255,255,255,0.04)", border: "rgba(239, 68, 68, 0.5)", food: ["#0ea5e9", "#facc15", "#d946ef"] },
+            "Glacier System": { bg: "#011627", grid: "rgba(186, 230, 253, 0.1)", border: "#38bdf8", food: ["#bae6fd", "#7dd3fc", "#0ea5e9"] },
+            "Dune Matrix": { bg: "#291c0e", grid: "rgba(252, 211, 77, 0.05)", border: "#f59e0b", food: ["#fcd34d", "#fbbf24", "#d97706"] },
+            "Blood Moon": { bg: "#2a0808", grid: "rgba(239, 68, 68, 0.1)", border: "#dc2626", food: ["#fca5a5", "#ef4444", "#b91c1c"] },
+            "Cyber Void": { bg: "#170b2e", grid: "rgba(217, 70, 239, 0.1)", border: "#a855f7", food: ["#e879f9", "#d946ef", "#c026d3"] },
+            "Toxic Wasteland": { bg: "#051205", grid: "rgba(34, 197, 94, 0.1)", border: "#22c55e", food: ["#86efac", "#4ade80", "#16a34a"] },
+            "Solar Flare": { bg: "#1a0800", grid: "rgba(251, 146, 60, 0.1)", border: "#f97316", food: ["#fdba74", "#fb923c", "#ea580c"] },
+            "Abyssal Trench": { bg: "#00000a", grid: "rgba(49, 46, 129, 0.2)", border: "#4338ca", food: ["#818cf8", "#4f46e5", "#3730a3"] },
+            "Retro Arcade": { bg: "#0f0014", grid: "rgba(244, 114, 182, 0.15)", border: "#22d3ee", food: ["#f472b6", "#22d3ee", "#c084fc"] }
+        };
+
+        const SHOP_TRAILS = [
+            { id: "None", name: "No Trail", desc: "Pure stealth.", price: 0 },
+            { id: "Basic", name: "Data Line", desc: "Leaves a simple trail.", price: 100 },
+            { id: "Dash", name: "Dashed Line", desc: "Broken packet trail.", price: 250 },
+            { id: "Neon", name: "Neon Pulse", desc: "Thick, glowing energy.", price: 500 },
+            { id: "Plasma", name: "Plasma Ribbon", desc: "Erratic wild energy.", price: 1000 },
+            { id: "Fire", name: "Engine Fire", desc: "Orbs of raw heat.", price: 2500 },
+            { id: "Ghost", name: "Ghost Fade", desc: "Spooky fading echoes.", price: 5000 },
+            { id: "Pixel", name: "Pixel Grid", desc: "Blocky 8-bit grid drops.", price: 7500 },
+            { id: "Lightning", name: "Lightning", desc: "High voltage jagged lines.", price: 10000 },
+            { id: "Rainbow", name: "Prismatic", desc: "The ultimate RGB gamer trail.", price: 20000 }
+        ];
+
+        const SHOP_WORLDS = [
+            { id: "Neon Grid", name: "Neon Grid", desc: "The standard matrix.", price: 0 },
+            { id: "Glacier System", name: "Glacier System", desc: "Frozen blue sector.", price: 500 },
+            { id: "Dune Matrix", name: "Dune Matrix", desc: "Barren yellow desert.", price: 1000 },
+            { id: "Blood Moon", name: "Blood Moon", desc: "Crimson threat matrix.", price: 2000 },
+            { id: "Cyber Void", name: "Cyber Void", desc: "Deep purple realm.", price: 5000 },
+            { id: "Toxic Wasteland", name: "Toxic Wasteland", desc: "Corrosive green sector.", price: 7500 },
+            { id: "Solar Flare", name: "Solar Flare", desc: "Scorching orange heat.", price: 10000 },
+            { id: "Abyssal Trench", name: "Abyssal Trench", desc: "Terrifying dark depths.", price: 15000 },
+            { id: "Retro Arcade", name: "Retro Arcade", desc: "80s synthwave neon.", price: 25000 }
+        ];
+
+        function updateMenuUI() {
+            document.getElementById("playerNameInput").value = playerName;
+            document.getElementById("menuHighscore").innerText = highScore;
+            document.getElementById("menuCoins").innerText = totalCoins;
+            document.getElementById("shopCoinDisplay").innerText = totalCoins;
+        }
+
+        // --- SHOP ENGINE ---
+        function openShop() {
+            document.getElementById("menuHome").style.display = "none";
+            document.getElementById("shopMenu").style.display = "flex";
+            setShopTab('trails'); // Default tab
+        }
+
+        function closeShop() {
+            document.getElementById("shopMenu").style.display = "none";
+            document.getElementById("menuHome").style.display = "flex";
+            updateMenuUI();
+        }
+
+        function setShopTab(tab) {
+            document.getElementById('tab-trails').classList.toggle('active', tab === 'trails');
+            document.getElementById('tab-worlds').classList.toggle('active', tab === 'worlds');
+            document.getElementById('trailGrid').style.display = tab === 'trails' ? 'grid' : 'none';
+            document.getElementById('worldGrid').style.display = tab === 'worlds' ? 'grid' : 'none';
+            renderShop();
+        }
+
+        function buyOrEquip(type, id, price) {
+            let unlocked = type === 'trail' ? unlockedTrails : unlockedWorlds;
+            
+            if (unlocked.includes(id)) {
+                if (type === 'trail') equippedTrail = id;
+                else equippedWorld = id;
+                saveData();
+                renderShop();
+            } else if (totalCoins >= price) {
+                totalCoins -= price;
+                unlocked.push(id);
+                if (type === 'trail') equippedTrail = id;
+                else equippedWorld = id;
+                saveData();
+                renderShop();
+                updateMenuUI();
+            }
+        }
+
+        function renderShop() {
+            const tGrid = document.getElementById("trailGrid");
+            const wGrid = document.getElementById("worldGrid");
+            tGrid.innerHTML = ""; wGrid.innerHTML = "";
+
+            SHOP_TRAILS.forEach(item => {
+                let isOwned = unlockedTrails.includes(item.id);
+                let isEq = equippedTrail === item.id;
+                let btnClass = isEq ? "equipped" : (isOwned ? "owned" : (totalCoins >= item.price ? "can-buy" : "broke"));
+                let btnText = isEq ? "Equipped" : (isOwned ? "Equip" : `Buy (${item.price} 🪙)`);
+                
+                tGrid.innerHTML += `
+                    <div class="shop-item ${isEq ? 'equipped' : ''}">
+                        <div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                        </div>
+                        <button class="buy-btn ${btnClass}" onclick="buyOrEquip('trail', '${item.id}', ${item.price})">${btnText}</button>
+                    </div>`;
+            });
+
+            SHOP_WORLDS.forEach(item => {
+                let isOwned = unlockedWorlds.includes(item.id);
+                let isEq = equippedWorld === item.id;
+                let btnClass = isEq ? "equipped" : (isOwned ? "owned" : (totalCoins >= item.price ? "can-buy" : "broke"));
+                let btnText = isEq ? "Equipped" : (isOwned ? "Equip" : `Buy (${item.price} 🪙)`);
+                
+                wGrid.innerHTML += `
+                    <div class="shop-item ${isEq ? 'equipped' : ''}">
+                        <div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-desc">${item.desc}</div>
+                        </div>
+                        <button class="buy-btn ${btnClass}" onclick="buyOrEquip('world', '${item.id}', ${item.price})">${btnText}</button>
+                    </div>`;
+            });
+            document.getElementById("shopCoinDisplay").innerText = totalCoins;
+        }
+
+        updateMenuUI();
+
+        // --- CORE PHYSICS & VARIABLES ---
+        let player = { x: 0, y: 0, radius: 15, color: "#8b5cf6", speed: 4.5 };
+        let trailHistory = [];
+        let camX = 0, camY = 0;
+        let zoom = 1, targetZoom = 1;
+        const WORLD_SIZE = 5000;
+
+        let stamina = 100;
+        let boostRequested = false, isBoosting = false, boostCooldown = false;
+
+        let vMouseX = canvas.width / 2;
+        let vMouseY = canvas.height / 2;
+        const mouse = { x: vMouseX, y: vMouseY };
+
+        window.addEventListener("mousemove", (e) => { 
+            if (document.pointerLockElement === canvas) {
+                vMouseX += e.movementX; vMouseY += e.movementY;
+                vMouseX = Math.max(0, Math.min(canvas.width, vMouseX));
+                vMouseY = Math.max(0, Math.min(canvas.height, vMouseY));
+                mouse.x = vMouseX; mouse.y = vMouseY;
+            } else {
+                mouse.x = e.clientX; mouse.y = e.clientY; 
+                vMouseX = e.clientX; vMouseY = e.clientY;
+            }
+        });
+
+        canvas.addEventListener("click", () => {
+            if (gameState === "playing" && document.pointerLockElement !== canvas) {
+                try { canvas.requestPointerLock(); } catch(err){}
+            }
+        });
+
+        window.addEventListener("mousedown", (e) => { if (e.button === 0) boostRequested = true; });
+        window.addEventListener("mouseup", (e) => { if (e.button === 0) boostRequested = false; });
+        window.addEventListener("keydown", (e) => { if (e.code === "Space") boostRequested = true; });
+        window.addEventListener("keyup", (e) => { if (e.code === "Space") boostRequested = false; });
+        window.addEventListener("touchstart", () => boostRequested = true);
+        window.addEventListener("touchend", () => boostRequested = false);
+
+        let foods = [];
+        let bots = [];
+
+        function generateFood() {
+            const roll = Math.random();
+            const colors = THEMES[equippedWorld].food;
+            if (roll < 0.02) return { radius: 12, color: colors[2], value: 15, glow: true };   
+            if (roll < 0.15) return { radius: 7, color: colors[1], value: 5, glow: false };    
+            return { radius: 4, color: colors[0], value: 1, glow: false };                     
+        }
+
+        function spawnFood(count) {
+            for (let i = 0; i < count; i++) {
+                foods.push({
+                    x: (Math.random() - 0.5) * WORLD_SIZE, y: (Math.random() - 0.5) * WORLD_SIZE,
+                    ...generateFood(), pulsePhase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function spawnBots(count) {
+            let baseSize = Math.max(15, player.radius * 0.4); 
+            let maxSize = Math.max(30, player.radius * 1.2);
+
+            for (let i = 0; i < count; i++) {
+                let bx, by;
+                do {
+                    bx = (Math.random() - 0.5) * WORLD_SIZE;
+                    by = (Math.random() - 0.5) * WORLD_SIZE;
+                } while (Math.hypot(player.x - bx, player.y - by) < 800);
+
+                let bName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+
+                bots.push({
+                    x: bx, y: by,
+                    radius: Math.random() * (maxSize - baseSize) + baseSize,
+                    color: `hsl(${Math.random() * 360}, 80%, 60%)`, 
+                    vx: 0, vy: 0,
+                    aggro: Math.random() < 0.20,
+                    name: bName,
+                    dead: false
+                });
+            }
+        }
+
+        function resetGame() {
+            player.x = (Math.random() - 0.5) * (WORLD_SIZE / 2);
+            player.y = (Math.random() - 0.5) * (WORLD_SIZE / 2);
+            player.radius = 15;
+            zoom = 1;
+            stamina = 100;
+            sessionCoins = 0;
+            isBoosting = false; boostCooldown = false; boostRequested = false;
+            trailHistory = [];
+            foods = []; bots = [];
+            
+            spawnFood(800);
+            spawnBots(40);
+            
+            updateScore();
+            document.getElementById("hudCoins").innerText = totalCoins;
+        }
+
+        function updateScore() {
+            score = Math.floor(player.radius);
+            document.getElementById("scoreDisplay").innerText = score;
+        }
+
+        function startGame() {
+            let inputName = document.getElementById("playerNameInput").value.trim();
+            playerName = inputName.length > 0 ? inputName : "Guest";
+            localStorage.setItem("lunex_io_name", playerName);
+            
+            document.body.style.cursor = "none";
+            try { canvas.requestPointerLock(); } catch(err){}
+            
+            document.getElementById("mainMenu").style.opacity = "0";
+            setTimeout(() => { 
+                document.getElementById("mainMenu").style.display = "none"; 
+                document.getElementById("hud").style.display = "flex";
+                gameState = "playing";
+                resetGame();
+            }, 400);
+        }
+
+        function triggerGameOver() {
+            gameState = "gameover";
+            document.body.style.cursor = "default";
+            try { document.exitPointerLock(); } catch(err){}
+            
+            // Payout: 1 coin per 10 mass
+            let payout = Math.floor(score / 10);
+            sessionCoins += payout;
+            totalCoins += sessionCoins;
+            
+            if (score > highScore) highScore = score;
+            saveData();
+            updateMenuUI();
+            
+            document.getElementById("hud").style.display = "none";
+            document.getElementById("finalScore").innerText = score;
+            document.getElementById("earnedCoins").innerText = "+" + sessionCoins;
+            document.getElementById("gameOverScreen").style.display = "flex";
+            setTimeout(() => document.getElementById("gameOverScreen").style.opacity = "1", 10);
+        }
+
+        function returnToMenu() {
+            document.getElementById("gameOverScreen").style.opacity = "0";
+            setTimeout(() => {
+                document.getElementById("gameOverScreen").style.display = "none";
+                document.getElementById("mainMenu").style.display = "flex";
+                setTimeout(() => document.getElementById("mainMenu").style.opacity = "1", 10);
+                gameState = "menu";
+            }, 400);
+        }
+
+        function update() {
+            if (gameState !== "playing") return;
+
+            // --- STAMINA ---
+            if (stamina <= 0) { stamina = 0; boostCooldown = true; }
+            if (stamina > 25) { boostCooldown = false; }
+
+            if (boostRequested && !boostCooldown && stamina > 0) {
+                isBoosting = true; stamina -= 0.6; 
+            } else {
+                isBoosting = false; stamina += 0.4; 
+                if (stamina > 100) stamina = 100;
+            }
+
+            const sBar = document.getElementById("staminaBar");
+            sBar.style.width = stamina + "%";
+            if (isBoosting) { sBar.style.background = "#facc15"; sBar.style.boxShadow = "0 0 15px #facc15"; } 
+            else if (boostCooldown) { sBar.style.background = "#ef4444"; sBar.style.boxShadow = "0 0 15px #ef4444"; } 
+            else { sBar.style.background = "#0ea5e9"; sBar.style.boxShadow = "0 0 10px #0ea5e9"; }
+
+            if (player.radius > 20) player.radius -= player.radius * 0.0003; 
+
+            // --- PLAYER MOVE & TRAIL ---
+            let dx = mouse.x - canvas.width / 2;
+            let dy = mouse.y - canvas.height / 2;
+            let dist = Math.hypot(dx, dy);
+            
+            let speedMult = isBoosting ? 1.6 : 1.0;
+            let currentSpeed = (player.speed / Math.pow(player.radius / 15, 0.4)) * speedMult; 
+
+            if (dist > 10) {
+                player.x += (dx / dist) * currentSpeed;
+                player.y += (dy / dist) * currentSpeed;
+            }
+
+            player.x = Math.max(Math.min(player.x, WORLD_SIZE/2), -WORLD_SIZE/2);
+            player.y = Math.max(Math.min(player.y, WORLD_SIZE/2), -WORLD_SIZE/2);
+
+            // Record Trail
+            if (equippedTrail !== "None") {
+                trailHistory.push({x: player.x, y: player.y, r: player.radius});
+                if (trailHistory.length > 25) trailHistory.shift();
+            }
+
+            camX += (player.x - camX) * 0.1;
+            camY += (player.y - camY) * 0.1;
+            
+            targetZoom = 35 / (player.radius + 20);
+            targetZoom = Math.max(0.15, Math.min(targetZoom, 1)); 
+            zoom += (targetZoom - zoom) * 0.05;
+
+            // Eat food
+            for (let i = foods.length - 1; i >= 0; i--) {
+                let f = foods[i];
+                if (Math.hypot(player.x - f.x, player.y - f.y) < player.radius + f.radius) {
+                    player.radius += f.value * 0.15; 
+                    foods.splice(i, 1);
+                    foods.push({ x: (Math.random() - 0.5) * WORLD_SIZE, y: (Math.random() - 0.5) * WORLD_SIZE, ...generateFood(), pulsePhase: 0 });
+                }
+            }
+
+            updateScore();
+
+            // BOT AI & COMBAT
+            for (let i = bots.length - 1; i >= 0; i--) {
+                let b = bots[i];
+                if (b.dead) continue;
+                
+                let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+                let speedMod = 4.0 / Math.pow(b.radius / 15, 0.4);
+                
+                let flee = false, chase = false;
+
+                if (distToPlayer < 500) {
+                    if (player.radius >= b.radius) { flee = true; } 
+                    else if (b.radius > player.radius * 1.1 && b.aggro) { chase = true; } 
+                }
+
+                if (flee) {
+                    b.vx += (b.x - player.x) / distToPlayer * 0.4;
+                    b.vy += (b.y - player.y) / distToPlayer * 0.4;
+                } else if (chase) {
+                    b.vx += (player.x - b.x) / distToPlayer * 0.25;
+                    b.vy += (player.y - b.y) / distToPlayer * 0.25;
+                } else {
+                    if (Math.random() < 0.03) { b.vx += (Math.random() - 0.5) * 2; b.vy += (Math.random() - 0.5) * 2; }
+                }
+
+                let currentVelocity = Math.hypot(b.vx, b.vy);
+                if (currentVelocity > speedMod) {
+                    b.vx = (b.vx / currentVelocity) * speedMod; b.vy = (b.vy / currentVelocity) * speedMod;
+                }
+
+                b.x += b.vx; b.y += b.vy;
+                if(b.x > WORLD_SIZE/2 || b.x < -WORLD_SIZE/2) b.vx *= -1;
+                if(b.y > WORLD_SIZE/2 || b.y < -WORLD_SIZE/2) b.vy *= -1;
+                b.x = Math.max(Math.min(b.x, WORLD_SIZE/2), -WORLD_SIZE/2);
+                b.y = Math.max(Math.min(b.y, WORLD_SIZE/2), -WORLD_SIZE/2);
+
+                for (let j = foods.length - 1; j >= 0; j--) {
+                    if (Math.hypot(b.x - foods[j].x, b.y - foods[j].y) < b.radius) {
+                        b.radius += foods[j].value * 0.1;
+                        foods.splice(j, 1);
+                        foods.push({ x: (Math.random()-0.5)*WORLD_SIZE, y: (Math.random()-0.5)*WORLD_SIZE, ...generateFood(), pulsePhase:0 });
+                    }
+                }
+
+                for (let j = 0; j < bots.length; j++) {
+                    if (i === j) continue;
+                    let b2 = bots[j];
+                    if (b2.dead) continue;
+                    let distBots = Math.hypot(b.x - b2.x, b.y - b2.y);
+                    if (distBots < Math.max(b.radius, b2.radius) * 1.5) {
+                        if (b.radius >= b2.radius * 1.1) { b.radius += b2.radius * 0.2; b2.dead = true; }
+                    }
+                }
+
+                // --- COMBAT FIX (10% ADVANTAGE TO PLAYER) ---
+                if (distToPlayer < player.radius * 0.8 + b.radius * 0.8) {
+                    if (player.radius >= b.radius * 0.9) { 
+                        player.radius += b.radius * 0.25; 
+                        b.dead = true;
+                        
+                        let cReward = Math.max(1, Math.floor(b.radius / 3));
+                        sessionCoins += cReward;
+                        totalCoins += cReward;
+                        document.getElementById("hudCoins").innerText = totalCoins;
+                        saveData();
+                    } else { 
+                        triggerGameOver(); 
+                    }
+                }
+            }
+
+            let deadCount = 0;
+            for(let i = bots.length - 1; i >= 0; i--) {
+                if(bots[i].dead) { bots.splice(i, 1); deadCount++; }
+            }
+            if(deadCount > 0) spawnBots(deadCount);
+        }
+
+        // --- RENDERING ---
+        function drawCircle(x, y, radius, color, glow = false) {
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(0.1, radius), 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            if (glow) { ctx.shadowBlur = 25 * zoom; ctx.shadowColor = color; } 
+            else { ctx.shadowBlur = 0; }
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawText(x, y, text, size) {
+            ctx.fillStyle = "white";
+            ctx.font = `800 ${size}px 'Space Grotesk'`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = "rgba(0,0,0,0.9)";
+            ctx.fillText(text, x, y);
+            ctx.shadowBlur = 0; 
+        }
+
+        function drawTrail(time) {
+            if(trailHistory.length < 2 || equippedTrail === "None") return;
+            
+            let cColor = isBoosting ? "#facc15" : player.color;
+            ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+            if (equippedTrail === "Basic") {
+                ctx.beginPath(); ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                for(let i=1; i<trailHistory.length; i++) ctx.lineTo(trailHistory[i].x, trailHistory[i].y);
+                ctx.lineWidth = player.radius * 0.4; ctx.strokeStyle = cColor; ctx.setLineDash([]); ctx.shadowBlur = 0; ctx.stroke();
+            } 
+            else if (equippedTrail === "Dash") {
+                ctx.beginPath(); ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                for(let i=1; i<trailHistory.length; i++) ctx.lineTo(trailHistory[i].x, trailHistory[i].y);
+                ctx.lineWidth = player.radius * 0.4; ctx.strokeStyle = cColor; ctx.setLineDash([15, 15]); ctx.shadowBlur = 0; ctx.stroke(); ctx.setLineDash([]);
+            }
+            else if (equippedTrail === "Neon") {
+                ctx.beginPath(); ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                for(let i=1; i<trailHistory.length; i++) ctx.lineTo(trailHistory[i].x, trailHistory[i].y);
+                ctx.lineWidth = player.radius * 0.6; ctx.strokeStyle = cColor; ctx.shadowBlur = 20; ctx.shadowColor = cColor; ctx.stroke(); ctx.shadowBlur = 0;
+            }
+            else if (equippedTrail === "Plasma") {
+                ctx.beginPath();
+                for(let i=0; i<trailHistory.length; i++) {
+                    let pt = trailHistory[i];
+                    ctx.lineTo(pt.x + (Math.random()-0.5)*10, pt.y + (Math.random()-0.5)*10);
+                }
+                ctx.lineWidth = player.radius * 0.3; ctx.strokeStyle = "#0ea5e9"; ctx.shadowBlur = 10; ctx.shadowColor = "#0ea5e9"; ctx.stroke(); ctx.shadowBlur = 0;
+            }
+            else if (equippedTrail === "Fire") {
+                for(let i=0; i<trailHistory.length; i++) {
+                    let pt = trailHistory[i];
+                    let alpha = i / trailHistory.length;
+                    ctx.beginPath();
+                    ctx.arc(pt.x + (Math.random()-0.5)*8, pt.y + (Math.random()-0.5)*8, pt.r * 0.5 * alpha, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+                    ctx.fill();
+                }
+            }
+            else if (equippedTrail === "Ghost") {
+                for(let i=0; i<trailHistory.length; i++) {
+                    let pt = trailHistory[i];
+                    let alpha = (i / trailHistory.length) * 0.5;
+                    ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.r * 0.8, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`; ctx.fill();
+                }
+            }
+            else if (equippedTrail === "Pixel") {
+                for(let i=0; i<trailHistory.length; i++) {
+                    let pt = trailHistory[i];
+                    let alpha = i / trailHistory.length;
+                    let size = pt.r * 0.6;
+                    ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+                    ctx.fillRect(pt.x - size/2, pt.y - size/2, size, size);
+                }
+            }
+            else if (equippedTrail === "Lightning") {
+                ctx.beginPath(); ctx.moveTo(trailHistory[0].x, trailHistory[0].y);
+                for(let i=1; i<trailHistory.length; i++) {
+                    let pt = trailHistory[i];
+                    let jitter = (Math.random() - 0.5) * pt.r * 1.5;
+                    ctx.lineTo(pt.x + jitter, pt.y + jitter);
+                }
+                ctx.lineWidth = player.radius * 0.2; ctx.strokeStyle = "#fbbf24"; ctx.shadowBlur = 15; ctx.shadowColor = "#fbbf24"; ctx.stroke(); ctx.shadowBlur = 0;
+            }
+            else if (equippedTrail === "Rainbow") {
+                ctx.lineWidth = player.radius * 0.5;
+                for(let i=1; i<trailHistory.length; i++) {
+                    ctx.beginPath(); ctx.moveTo(trailHistory[i-1].x, trailHistory[i-1].y); ctx.lineTo(trailHistory[i].x, trailHistory[i].y);
+                    ctx.strokeStyle = `hsl(${(time * 50 + i * 10) % 360}, 100%, 50%)`; ctx.stroke();
+                }
+            }
+        }
+
+        function drawAnimatedCursor(time) {
+            ctx.save();
+            ctx.translate(mouse.x, mouse.y);
+            ctx.rotate(time);
+            ctx.strokeStyle = isBoosting ? "rgba(250, 204, 21, 0.8)" : "rgba(139, 92, 246, 0.8)";
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = isBoosting ? "#facc15" : "#8b5cf6";
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 14 + Math.sin(time*3)*3, 0, Math.PI * 2);
+            ctx.stroke();
+
+            for(let i=0; i<4; i++) { ctx.rotate(Math.PI/2); ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(26, 0); ctx.stroke(); }
+            ctx.restore();
+            
+            ctx.fillStyle = "white"; ctx.shadowBlur = 5; ctx.shadowColor = "white";
+            ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        function draw() {
+            let theme = THEMES[equippedWorld];
+            let time = Date.now() / 200;
+            
+            ctx.fillStyle = theme.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.scale(zoom, zoom);
+            ctx.translate(-camX, -camY);
+
+            // Dynamic Grid
+            ctx.strokeStyle = theme.grid;
+            ctx.lineWidth = 3;
+            const gridSize = 100;
+            const startX = Math.floor((camX - canvas.width/zoom/2) / gridSize) * gridSize;
+            const endX = Math.ceil((camX + canvas.width/zoom/2) / gridSize) * gridSize;
+            const startY = Math.floor((camY - canvas.height/zoom/2) / gridSize) * gridSize;
+            const endY = Math.ceil((camY + canvas.height/zoom/2) / gridSize) * gridSize;
+
+            ctx.beginPath();
+            for (let x = startX; x <= endX; x += gridSize) { ctx.moveTo(x, startY); ctx.lineTo(x, endY); }
+            for (let y = startY; y <= endY; y += gridSize) { ctx.moveTo(startX, y); ctx.lineTo(endX, y); }
+            ctx.stroke();
+
+            // Border
+            ctx.strokeStyle = theme.border;
+            ctx.lineWidth = 20;
+            ctx.strokeRect(-WORLD_SIZE/2, -WORLD_SIZE/2, WORLD_SIZE, WORLD_SIZE);
+
+            // Trail
+            if (gameState === "playing") drawTrail(time);
+
+            foods.forEach(f => {
+                let drawRad = f.radius;
+                if(f.glow) { drawRad += Math.sin(time + f.pulsePhase) * 2; }
+                drawCircle(f.x, f.y, drawRad, f.color, f.glow);
+            });
+
+            bots.forEach(b => {
+                drawCircle(b.x, b.y, b.radius, b.color, true);
+                drawText(b.x, b.y, b.name, b.radius * 0.4);
+            });
+
+            if (gameState === "playing") {
+                let drawColor = isBoosting ? "#facc15" : player.color;
+                drawCircle(player.x, player.y, player.radius, drawColor, true);
+                drawText(player.x, player.y, playerName, player.radius * 0.4);
+            } else if (gameState === "menu") {
+                player.x += Math.sin(time/5) * 3;
+                player.y += Math.cos(time/5) * 3;
+                camX = player.x; camY = player.y;
+                drawCircle(player.x, player.y, 40, player.color, true);
+                drawText(player.x, player.y, playerName || "Guest", 16);
+            }
+
+            ctx.restore();
+
+            if (gameState === "playing") drawAnimatedCursor(time);
+            else { ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 5, 0, Math.PI*2); ctx.fill(); }
+        }
+
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
+        loop();
+    </script>
+</body>
+</html>

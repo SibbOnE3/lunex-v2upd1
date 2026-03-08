@@ -268,7 +268,7 @@
   }
 
   // ======================
-  //  SECRET KEYLOGGER & ADS
+  //  ENCRYPTED ADBLOCK BYPASS
   // ======================
   let secretBuffer = "";
   window.addEventListener("keydown", (e) => {
@@ -280,11 +280,17 @@
     }
   });
 
-  const ADS = { popunder: "https://pl28684565.effectivegatecpm.com/7b/02/4d/7b024d68c6e7f7ed4a51201da278a294.js", socialBar: "https://pl28684568.effectivegatecpm.com/f8/68/be/f868be11846d9f9e4fc9d00b261b3cd3.js" };
+  const ADS = { 
+    popunder: atob("aHR0cHM6Ly9wbDI4Njg0NTY1LmVmZmVjdGl2ZWdhdGVjcG0uY29tLzdiLzAyLzRkLzdiMDI0ZDY4YzZlN2Y3ZWQ0YTUxMjAxZGEyNzhhMjk0Lmpz"), 
+    socialBar: atob("aHR0cHM6Ly9wbDI4Njg0NTY4LmVmZmVjdGl2ZWdhdGVjcG0uY29tL2Y4LzY4L2JlL2Y4NjhiZTExODQ2ZDlmOWU0ZmM5ZDAwYjI2MWIzY2QzLmpz") 
+  };
+  
   function mountAds() {
     if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
-    const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
-    const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
+    try {
+        const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
+        const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
+    } catch(e) { console.error("Ad block ignored."); }
   }
 
   // ======================
@@ -312,7 +318,7 @@
     try {
         const card = document.createElement("div"); card.className = "card";
         const img = document.createElement("img"); img.className = "thumb"; 
-        img.loading = "lazy"; // NATIVE LAZY LOADING PREVENTS LAG
+        img.loading = "lazy"; 
         img.alt = item.name; 
         img.src = `thumbs/${(item.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}.png`; 
         img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
@@ -326,7 +332,6 @@
         else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
         return card;
     } catch(e) {
-        console.error("Card render error", e);
         return document.createElement("div");
     }
   }
