@@ -2,9 +2,6 @@
   if (window.__LUNEX_PATCH_LOADED__) return;
   window.__LUNEX_PATCH_LOADED__ = true;
 
-  // ======================
-  //  UI ANIMATIONS & CSS INJECTION 
-  // ======================
   const style = document.createElement('style');
   style.innerHTML = `
     .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(15px); }
@@ -36,38 +33,42 @@
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // ======================
-  //  TERMINAL BOOT SEQUENCE 
+  //  TERMINAL BOOT SEQUENCE
   // ======================
   function runBootSequence() {
     const boot = $("#bootScreen");
-    
     if (!boot || sessionStorage.getItem("lunex_booted")) {
       if(boot) boot.style.display = "none";
       return;
     }
-
     boot.style.display = "flex";
 
     const lines = [
-      "[INITIATING SECURE CONNECTION...]",
-      "[BYPASSING FIREWALL PROTOCOLS...]",
-      "[LOADING LUNEX V2.2 KERNEL...]",
-      "[ACCESS GRANTED]"
+      "Initializing core subsystems...",
+      "Bypassing network firewalls...",
+      "Arming stealth protocols...",
+      "Injecting game modules...",
+      "ACCESS GRANTED."
     ];
     
     const textDiv = $("#bootText");
     let delay = 0;
     
-    lines.forEach((line) => {
-      setTimeout(() => { textDiv.innerHTML += line + "<br>"; }, delay);
-      delay += 400 + Math.random() * 300;
+    lines.forEach((line, index) => {
+      setTimeout(() => {
+        if(textDiv) textDiv.innerHTML += `> ${line}<br>`;
+        if(index === lines.length - 1) {
+            const cursor = $("#bootCursor");
+            if(cursor) cursor.style.display = "none";
+            setTimeout(() => {
+                boot.style.opacity = "0";
+                setTimeout(() => boot.remove(), 600);
+                sessionStorage.setItem("lunex_booted", "true");
+            }, 800);
+        }
+      }, delay);
+      delay += 300 + Math.random() * 200;
     });
-    
-    setTimeout(() => {
-      boot.style.opacity = "0";
-      setTimeout(() => boot.remove(), 600);
-      sessionStorage.setItem("lunex_booted", "true");
-    }, delay + 400);
   }
 
   // ======================
@@ -106,8 +107,8 @@
     
     if(!bindBtn) return;
     bindBtn.textContent = panicKey;
-    targetSelect.value = panicTarget;
-    disguiseToggle.checked = disguiseActive;
+    if(targetSelect) targetSelect.value = panicTarget;
+    if(disguiseToggle) disguiseToggle.checked = disguiseActive;
 
     bindBtn.addEventListener("click", () => {
       bindBtn.textContent = "Press any key...";
@@ -124,13 +125,13 @@
       window.addEventListener("keydown", listener);
     });
 
-    targetSelect.addEventListener("change", (e) => {
+    targetSelect?.addEventListener("change", (e) => {
       panicTarget = e.target.value;
       localStorage.setItem("lunex_panic_target", panicTarget);
       pulseToast("Cloak target updated.");
     });
 
-    disguiseToggle.addEventListener("change", (e) => {
+    disguiseToggle?.addEventListener("change", (e) => {
       disguiseActive = e.target.checked;
       localStorage.setItem("lunex_disguise", disguiseActive);
       pulseToast(disguiseActive ? "Auto-Disguise Armed 🛡️" : "Auto-Disguise Disabled");
@@ -138,7 +139,7 @@
   }
 
   // ======================
-  //  PREMIUM PARTICLE ENGINE (DUAL COLOR)
+  //  PARTICLE ENGINE
   // ======================
   const pCanvas = document.getElementById('particles-canvas');
   const ctx = pCanvas?.getContext('2d');
@@ -190,17 +191,15 @@
   }
   if(pCanvas){ window.addEventListener('resize', initParticles); initParticles(); drawParticles(); }
 
-  // ======================
-  //  UI & Tabs
-  // ======================
   function checkDailyPopup() {
     const today = new Date().toDateString();
     if (localStorage.getItem("lunex_last_motd") !== today) {
       const modal = $("#motdModal");
       if (modal) {
-        $("#motdTitle").textContent = MOTD_TITLE; $("#motdText").textContent = MOTD_TEXT;
+        if($("#motdTitle")) $("#motdTitle").textContent = MOTD_TITLE; 
+        if($("#motdText")) $("#motdText").textContent = MOTD_TEXT;
         modal.classList.add("open");
-        $("#motdDoneBtn").addEventListener("click", () => { localStorage.setItem("lunex_last_motd", today); modal.classList.remove("open"); }, { once: true });
+        $("#motdDoneBtn")?.addEventListener("click", () => { localStorage.setItem("lunex_last_motd", today); modal.classList.remove("open"); }, { once: true });
       }
     }
   }
@@ -214,7 +213,7 @@
   }
 
   // ======================
-  //  XP, PLAYTIME & TOAST
+  //  XP & PLAYTIME
   // ======================
   const LS = { XP: "lunex_xp", LV: "lunex_lv", NAME: "lunex_name", CHAT: "lunex_chat", PLAYTIME: "lunex_playtime" };
   function getInt(key, d = 0) { const v = Number(localStorage.getItem(key)); return Number.isFinite(v) ? v : d; }
@@ -263,7 +262,7 @@
   }
 
   // ======================
-  //  RESTORED: SECRET KEYLOGGER & ADS
+  //  SECRET KEYLOGGER & ADS
   // ======================
   let secretBuffer = "";
   window.addEventListener("keydown", (e) => {
@@ -282,9 +281,6 @@
     const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
   }
 
-  // ======================
-  //  Game Player Controls
-  // ======================
   function openGame(game) { 
     const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
     if (!overlay || !frame) return; 
@@ -304,23 +300,28 @@
   }
 
   function makeCard(item, type) {
-    const card = document.createElement("div"); card.className = "card";
-    const img = document.createElement("img"); img.className = "thumb"; img.loading = "lazy"; img.alt = item.name; 
-    img.src = thumbFor(item.name); 
-    img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
-    const body = document.createElement("div"); body.className = "cBody";
-    const name = document.createElement("div"); name.className = "cName"; name.textContent = item.name;
-    const desc = document.createElement("p"); desc.className = "cDesc"; desc.textContent = item.desc || "";
-    const meta = document.createElement("div"); meta.className = "cMeta";
-    const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = type === "game" ? item.tag : item.category;
-    meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
-    if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
-    else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
-    return card;
+    try {
+        const card = document.createElement("div"); card.className = "card";
+        const img = document.createElement("img"); img.className = "thumb"; img.loading = "lazy"; img.alt = item.name; 
+        img.src = `thumbs/${(item.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}.png`; 
+        img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
+        const body = document.createElement("div"); body.className = "cBody";
+        const name = document.createElement("div"); name.className = "cName"; name.textContent = item.name || "Unknown";
+        const desc = document.createElement("p"); desc.className = "cDesc"; desc.textContent = item.desc || "";
+        const meta = document.createElement("div"); meta.className = "cMeta";
+        const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = type === "game" ? (item.tag || "Game") : (item.category || "App");
+        meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
+        if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
+        else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
+        return card;
+    } catch(e) {
+        console.error("Card render error", e);
+        return document.createElement("div");
+    }
   }
 
   // ======================
-  //  Game Data & Dynamic Engine
+  //  Game Data
   // ======================
   const BASE_GAMES = [
     { name:"2048", url:"https://ultima-10b.pages.dev/", tag:"Puzzle", desc:"Combine tiles to reach 2048." },
@@ -421,9 +422,14 @@
   ];
 
   function mergeByName(base, extra) {
-    const map = new Map(base.map(x => [x.name.toLowerCase(), x]));
-    for (const x of extra) map.set(x.name.toLowerCase(), x);
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    try {
+        const map = new Map(base.map(x => [(x.name || "").toLowerCase(), x]));
+        for (const x of extra) map.set((x.name || "").toLowerCase(), x);
+        return Array.from(map.values()).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    } catch(e) {
+        console.error("Merge error", e);
+        return base;
+    }
   }
 
   let GAMES = [];
@@ -432,10 +438,7 @@
   let gameQuery = "";
   const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
 
-  function slugify(name) { return name.toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""); }
-  function thumbFor(name) { return `thumbs/${slugify(name)}.png`; }
-
-  function uniqueTags(list) { return ["All", ...Array.from(new Set(list.map(x => x.tag))).sort((a, b) => a.localeCompare(b))]; }
+  function uniqueTags(list) { return ["All", ...Array.from(new Set(list.map(x => x.tag || "Misc"))).sort((a, b) => a.localeCompare(b))]; }
   
   function renderChips(container, tags, active, onPick) {
     if (!container) return; container.innerHTML = "";
@@ -456,7 +459,7 @@
     if (!gameGrid) return; 
     gameGrid.innerHTML = ""; 
     const q = gameQuery.trim().toLowerCase();
-    const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || (g.name + " " + g.tag + " " + g.desc).toLowerCase().includes(q)));
+    const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || ((g.name||"") + " " + (g.tag||"") + " " + (g.desc||"")).toLowerCase().includes(q)));
     const frag = document.createDocumentFragment();
     filtered.forEach(g => frag.appendChild(makeCard(g, "game")));
     gameGrid.appendChild(frag);
@@ -501,27 +504,17 @@
   ].sort((a, b) => a.name.localeCompare(b.name));
 
   let appFilter = "All"; let appQuery = "";
-  function uniqueCats(list) { return ["All", ...Array.from(new Set(list.map(x => x.category))).sort((a, b) => a.localeCompare(b))]; }
+  function uniqueCats(list) { return ["All", ...Array.from(new Set(list.map(x => x.category || "Misc"))).sort((a, b) => a.localeCompare(b))]; }
   
   function renderApps() {
     const appGrid = $("#appGrid");
     if (!appGrid) return; 
     appGrid.innerHTML = ""; 
     const q = appQuery.trim().toLowerCase();
-    const list = APPS.filter(a => (appFilter === "All" || a.category === appFilter) && (!q || (a.name + " " + a.category + " " + a.desc).toLowerCase().includes(q)));
+    const list = APPS.filter(a => (appFilter === "All" || a.category === appFilter) && (!q || ((a.name||"") + " " + (a.category||"") + " " + (a.desc||"")).toLowerCase().includes(q)));
     const frag = document.createDocumentFragment(); list.forEach(a => frag.appendChild(makeCard(a, "app"))); appGrid.appendChild(frag);
   }
 
-  // Webhook Requests
-  function openReqModal() { 
-      const reqModal = $("#reqModal");
-      if(reqModal) { 
-          $("#reqFormArea").style.display = "block"; 
-          $("#reqSuccessArea").style.display = "none"; 
-          reqModal.classList.add("open"); 
-      } 
-  }
-  
   // Profile System
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
@@ -583,7 +576,10 @@
     const log = $("#chatLog"); if (!log) return; 
     const bubbles = log.querySelectorAll('.chat-msg');
     bubbles.forEach(b => b.remove());
-    const history = JSON.parse(localStorage.getItem(LS.CHAT) || "[]");
+    
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem(LS.CHAT) || "[]"); } catch(e) { localStorage.removeItem(LS.CHAT); }
+
     if (history.length > 0 && $("#aiPrompts")) { $("#aiPrompts").style.display = "none"; }
     if (history.length === 0) { appendBubble("assistant", "Hi there! I am Luna, your AI assistant for the Lunex Network. How can I help you today? ✨"); } 
     else { history.forEach(m => appendBubble(m.role, m.content)); }
@@ -594,10 +590,12 @@
     const text = (overrideText || input.value || "").trim(); 
     if (!text) return; 
     
-    input.value = "";
+    if(input) input.value = "";
     if ($("#aiPrompts")) $("#aiPrompts").style.display = "none"; 
     
-    const h = JSON.parse(localStorage.getItem(LS.CHAT) || "[]"); 
+    let h = [];
+    try { h = JSON.parse(localStorage.getItem(LS.CHAT) || "[]"); } catch(e) { h = []; }
+    
     h.push({ role: "user", content: text });
     appendBubble("user", text); 
     addXP(2); 
@@ -608,8 +606,7 @@
     typingDiv.id = typingId;
     typingDiv.className = "chat-msg bot";
     typingDiv.innerHTML = `<div style="display:flex; align-items:center; height:18px;"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
-    log.appendChild(typingDiv);
-    log.scrollTop = log.scrollHeight;
+    if(log) { log.appendChild(typingDiv); log.scrollTop = log.scrollHeight; }
 
     try {
       const selectedModel = $("#lunaModelSelect")?.value || "openai"; 
@@ -638,68 +635,72 @@
   }
 
   // ======================
-  //  THE MASTER INIT 
+  //  THE MASTER INIT (100% DECOUPLED)
   // ======================
   function init() {
-    runBootSequence(); 
-    syncLevelUI(); checkDailyPopup(); initSettings(); 
+    try { runBootSequence(); } catch(e) { console.error("Boot Err:", e); }
+    try { syncLevelUI(); checkDailyPopup(); initSettings(); } catch(e) { console.error("UI Setup Err:", e); }
     
-    // 🔥 THE FIX: mountAds is back and the site will no longer crash!
-    setTimeout(mountAds, 2000);
+    setTimeout(() => { try { mountAds(); } catch(e) {} }, 2000);
 
-    $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
-    $$(".discord-link-btn").forEach(btn => btn.addEventListener("click", () => window.open(DISCORD_LINK, "_blank")));
-
-    $("#closeBtn")?.addEventListener("click", closeGame);
-    $("#overlay")?.addEventListener("click", (e) => { if (e.target === $("#overlay")) closeGame(); });
-    $("#fsBtn")?.addEventListener("click", async () => { try { if ($("#playerFrame")?.requestFullscreen) await $("#playerFrame").requestFullscreen(); } catch { } });
-    
-    $("#shuffleGames")?.addEventListener("click", () => {
-      for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
-      renderGames(); addXP(1);
-    });
-    
-    $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
-    
-    $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(); });
-    $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
-
-    $("#openReqBtnPlay")?.addEventListener("click", openReqModal);
-    $("#cancelReq")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
-    $("#closeReqSuccessBtn")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
-    
-    $("#submitReq")?.addEventListener("click", async () => {
-      const WEBHOOK_URL = "https://discord.com/api/webhooks/1479177395582799882/nF3uzNjp9flRFDmleaDZ6BzEXZ14uqjH3xGZTf0Bd01TU6UsnYoLPNZADNeXCTX7EsSI"; 
-      const name = $("#reqGameName").value.trim(); const notes = $("#reqGameDesc").value.trim();
-      if (!name) return pulseToast("Please enter a game name!");
-      const now = Date.now();
-      if (localStorage.getItem("lastGameRequest") && now - localStorage.getItem("lastGameRequest") < 300000) return pulseToast("You are doing that too fast.");
+    try {
+      $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
+      $$(".discord-link-btn").forEach(btn => btn.addEventListener("click", () => window.open(DISCORD_LINK, "_blank")));
+      $("#closeBtn")?.addEventListener("click", closeGame);
+      $("#overlay")?.addEventListener("click", (e) => { if (e.target === $("#overlay")) closeGame(); });
+      $("#fsBtn")?.addEventListener("click", async () => { try { if ($("#playerFrame")?.requestFullscreen) await $("#playerFrame").requestFullscreen(); } catch { } });
       
-      $("#submitReq").innerText = "Sending...";
-      try {
-        const res = await fetch(WEBHOOK_URL, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ embeds: [{ title: "🔔 Game Request", description: `**Game:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
-        });
-        if (res.ok) {
-            $("#reqGameName").value = ""; $("#reqGameDesc").value = "";
-            $("#reqFormArea").style.display = "none"; $("#reqSuccessArea").style.display = "block";
-            localStorage.setItem("lastGameRequest", now);
-        } else pulseToast("Network error.");
-      } catch(e) { pulseToast("Error sending request."); }
-      $("#submitReq").innerText = "Send Request";
-    });
+      $("#shuffleGames")?.addEventListener("click", () => {
+        for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
+        renderGames(); addXP(1);
+      });
+      
+      $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
+      $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(); });
+      $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
 
-    refreshChatLog();
-    $("#chatSend")?.addEventListener("click", () => handleChatSend());
-    $("#chatInput")?.addEventListener("keydown", (e) => { if (e.key === "Enter") handleChatSend(); });
-    $$(".prompt-pill").forEach(btn => { btn.addEventListener("click", () => handleChatSend(btn.innerText)); });
+      $("#openReqBtnPlay")?.addEventListener("click", () => { 
+        if($("#reqModal")) { $("#reqFormArea").style.display = "block"; $("#reqSuccessArea").style.display = "none"; $("#reqModal").classList.add("open"); } 
+      });
+      $("#cancelReq")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
+      $("#closeReqSuccessBtn")?.addEventListener("click", () => { $("#reqModal")?.classList.remove("open"); });
+      
+      $("#submitReq")?.addEventListener("click", async () => {
+        const name = $("#reqGameName")?.value.trim(); const notes = $("#reqGameDesc")?.value.trim();
+        if (!name) return pulseToast("Please enter a game name!");
+        const now = Date.now();
+        if (localStorage.getItem("lastGameRequest") && now - localStorage.getItem("lastGameRequest") < 300000) return pulseToast("You are doing that too fast.");
+        
+        $("#submitReq").innerText = "Sending...";
+        try {
+          const res = await fetch("https://discord.com/api/webhooks/1479177395582799882/nF3uzNjp9flRFDmleaDZ6BzEXZ14uqjH3xGZTf0Bd01TU6UsnYoLPNZADNeXCTX7EsSI", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ embeds: [{ title: "🔔 Game Request", description: `**Game:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
+          });
+          if (res.ok) {
+              if($("#reqGameName")) $("#reqGameName").value = ""; 
+              if($("#reqGameDesc")) $("#reqGameDesc").value = "";
+              if($("#reqFormArea")) $("#reqFormArea").style.display = "none"; 
+              if($("#reqSuccessArea")) $("#reqSuccessArea").style.display = "block";
+              localStorage.setItem("lastGameRequest", now);
+          } else pulseToast("Network error.");
+        } catch(e) { pulseToast("Error sending request."); }
+        if($("#submitReq")) $("#submitReq").innerText = "Send Request";
+      });
 
-    syncDatabase(); 
-    const onAppPick = (t) => { appFilter = t; renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
-    if($("#appChips")) renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); 
-    renderApps();
-    renderProfile(); 
+      refreshChatLog();
+      $("#chatSend")?.addEventListener("click", () => handleChatSend());
+      $("#chatInput")?.addEventListener("keydown", (e) => { if (e.key === "Enter") handleChatSend(); });
+      $$(".prompt-pill").forEach(btn => { btn.addEventListener("click", () => handleChatSend(btn.innerText)); });
+    } catch(e) { console.error("Event Setup Err:", e); }
+
+    try {
+      syncDatabase(); 
+      const onAppPick = (t) => { appFilter = t; renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); renderApps(); };
+      if($("#appChips")) renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); 
+      renderApps();
+      renderProfile(); 
+    } catch(e) { console.error("Data Load Err:", e); }
   }
   
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();

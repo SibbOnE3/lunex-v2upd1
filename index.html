@@ -126,7 +126,7 @@
     .cMeta { margin-top: 14px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
     .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--muted); text-transform: uppercase; }
 
-    /* ====== COMMAND CENTER (SETTINGS) ====== */
+    /* ====== COMMAND CENTER ====== */
     .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 900px) { .cmd-grid { grid-template-columns: 1fr; } }
     .cmd-box { background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); border-radius: 16px; padding: 24px; }
@@ -144,25 +144,24 @@
     input:checked + .slider { background-color: var(--brand2); border-color: var(--brand2); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Keybinder & Dropdown */
+    /* Keybinder */
     .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand1); color: var(--brand1); padding: 6px 16px; border-radius: 8px; font-family: monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .keybind-btn:hover { background: rgba(139,92,246,0.2); }
     .keybind-btn.listening { background: var(--brand1); color: #fff; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
     .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; font-family: Inter; }
 
-    /* ====== FIXED VIEWS (Browser, Music, AI) ====== */
+    /* ====== VIEWS (Browser, AI) ====== */
     #view-browser, #view-clips, #view-music, #view-chat { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; overflow: hidden; }
     #view-browser, #view-music { border: 1px solid var(--stroke); border-radius: var(--r1); }
     
-    /* Browser Frame */
     .lunex-browser-container { display: flex; flex-direction: column; height: 100%; background: #000; }
     .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.9); border-bottom: 1px solid var(--stroke); }
     .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
     .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .browser-url-bar { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; }
     
-    /* NEW: AI CHAT STYLES */
+    /* AI Chat */
     .chat-input-wrapper { background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 16px; display: flex; align-items: center; padding: 10px 16px; gap: 12px; transition: border-color 0.3s; margin-top: 10px; }
     .chat-input-wrapper:focus-within { border-color: var(--brand1); }
     .input-icon { width: 20px; height: 20px; color: var(--muted); stroke: currentColor; fill: none; stroke-width: 2; }
@@ -177,27 +176,29 @@
     .chat-msg code { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid var(--stroke); }
     .chat-watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; text-align: center; pointer-events: none; }
 
-    /* Overlays & Modals */
+    /* Overlays */
     .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
     .overlay.open { display:flex; }
     @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
     
-    /* UI FIX: Added overflow: hidden to perfectly round the iframe corners inside the player */
     .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); overflow: hidden; border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
     .overlay.open .player { transform: scale(1); }
     .playerbar { padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--bg1); border-bottom: 1px solid var(--stroke); }
     .frameWrap { flex:1; background: #000; }
     iframe { width:100%; height:100%; border:0; }
     .modal-box { background: rgba(15, 20, 35, 0.95); padding: 32px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 440px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); text-align: center; }
-
-    /* SVG Utilities */
+    
     svg { width: 22px; height: 22px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
 <body>
 
-  <div id="bootScreen" style="position:fixed; inset:0; background:#03050a; z-index:99999; display:none; flex-direction:column; justify-content:center; padding:40px; font-family:monospace; color:var(--brand2); font-size:16px; transition:opacity 0.6s ease; pointer-events: none;">
-    <div id="bootText" style="text-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>
+  <div id="bootScreen" style="position:fixed; inset:0; background:#03050a; z-index:99999; display:none; flex-direction:column; justify-content:center; align-items: center; padding:40px; color:var(--brand2); transition:opacity 0.6s ease; pointer-events: none;">
+    <div style="width: 100%; max-width: 600px; text-align: left;">
+       <div style="font-family:'Space Grotesk'; font-size: 24px; font-weight: 900; color: var(--brand1); margin-bottom: 20px;">LUNEX_OS <span style="font-size:14px; color:var(--muted)">v2.2</span></div>
+       <div id="bootText" style="font-family: monospace; font-size: 14px; line-height: 1.8; text-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>
+       <div id="bootCursor" style="display:inline-block; width:8px; height:15px; background:var(--brand2); animation: blinkCaret 0.8s infinite; margin-left:4px; vertical-align: middle;"></div>
+    </div>
   </div>
 
   <div class="bg-mesh"></div>
@@ -228,12 +229,10 @@
           <svg class="sb-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
           <span class="sb-tab-text">Browser</span>
         </button>
-
         <button class="sb-tab" data-view="music">
           <svg class="sb-icon"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
           <span class="sb-tab-text">Music</span>
         </button>
-
         <button class="sb-tab" data-view="chat">
           <svg class="sb-icon"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           <span class="sb-tab-text">Luna AI</span>
@@ -288,7 +287,6 @@
         <div class="cmd-grid">
           <div class="cmd-box" style="border-color: rgba(139,92,246,0.3); background: radial-gradient(circle at top right, rgba(139,92,246,0.1), transparent);">
             <h2 class="cmd-title"><svg style="stroke: var(--brand1)"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Stealth Systems</h2>
-            
             <div class="cmd-row">
               <div>
                 <span class="cmd-label">Panic Key (Cloak)</span>
@@ -296,7 +294,6 @@
               </div>
               <button id="panicBindBtn" class="keybind-btn">`</button>
             </div>
-            
             <div class="cmd-row">
               <div>
                 <span class="cmd-label">Panic Redirect URL</span>
@@ -308,7 +305,6 @@
                 <option value="https://www.desmos.com/calculator">Desmos Calculator</option>
               </select>
             </div>
-
             <div class="cmd-row">
               <div>
                 <span class="cmd-label">Auto Tab Disguise</span>
@@ -435,7 +431,7 @@
     </div>
   </div>
   
-  <script src="/patch.js?v=31" defer></script>
+  <script src="/patch.js?v=32" defer></script>
   <script>
     function resetProxy() { document.getElementById('lunex-proxy-frame').src = "https://3d.manicresin.com/"; }
     function reloadProxy() { const f = document.getElementById('lunex-proxy-frame'); f.src = f.src; }
