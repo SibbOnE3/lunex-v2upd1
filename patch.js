@@ -36,7 +36,7 @@
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // ======================
-  //  TERMINAL BOOT SEQUENCE (BULLETPROOF CACHE FIX)
+  //  TERMINAL BOOT SEQUENCE 
   // ======================
   function runBootSequence() {
     const boot = $("#bootScreen");
@@ -138,7 +138,7 @@
   }
 
   // ======================
-  //  PREMIUM PARTICLE ENGINE (UPGRADED DUAL-COLOR EFFECT)
+  //  PREMIUM PARTICLE ENGINE (DUAL COLOR)
   // ======================
   const pCanvas = document.getElementById('particles-canvas');
   const ctx = pCanvas?.getContext('2d');
@@ -163,7 +163,6 @@
   function drawParticles() {
       if(!ctx) return;
       ctx.clearRect(0, 0, width, height);
-      
       for (let i = 0; i < particles.length; i++) {
           let p = particles[i];
           p.y -= p.speed; p.x += Math.sin(p.angle) * 0.5; p.angle += 0.01;
@@ -261,6 +260,26 @@
   function formatPT(mins) {
     if(mins < 60) return `${mins} mins`;
     return `${Math.floor(mins/60)}h ${mins%60}m`;
+  }
+
+  // ======================
+  //  RESTORED: SECRET KEYLOGGER & ADS
+  // ======================
+  let secretBuffer = "";
+  window.addEventListener("keydown", (e) => {
+    if (e.key.length === 1 || e.key === "!") {
+      secretBuffer += e.key.toLowerCase();
+      if (secretBuffer.length > 15) secretBuffer = secretBuffer.slice(-15);
+      if (secretBuffer.endsWith("qwerty!")) { localStorage.setItem("lunex_no_ads", (Date.now() + 86400000).toString()); pulseToast("Ads disabled for 24 hours! 🤫"); secretBuffer = ""; }
+      if (secretBuffer.endsWith("!ytrewq")) { localStorage.removeItem("lunex_no_ads"); pulseToast("Ads re-enabled."); setTimeout(() => window.location.reload(), 1000); secretBuffer = ""; }
+    }
+  });
+
+  const ADS = { popunder: "https://pl28684565.effectivegatecpm.com/7b/02/4d/7b024d68c6e7f7ed4a51201da278a294.js", socialBar: "https://pl28684568.effectivegatecpm.com/f8/68/be/f868be11846d9f9e4fc9d00b261b3cd3.js" };
+  function mountAds() {
+    if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
+    const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
+    const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
   }
 
   // ======================
@@ -619,11 +638,14 @@
   }
 
   // ======================
-  //  THE MASTER INIT (Race Condition Fix)
+  //  THE MASTER INIT 
   // ======================
   function init() {
     runBootSequence(); 
-    syncLevelUI(); checkDailyPopup(); initSettings(); setTimeout(mountAds, 2000);
+    syncLevelUI(); checkDailyPopup(); initSettings(); 
+    
+    // 🔥 THE FIX: mountAds is back and the site will no longer crash!
+    setTimeout(mountAds, 2000);
 
     $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
     $$(".discord-link-btn").forEach(btn => btn.addEventListener("click", () => window.open(DISCORD_LINK, "_blank")));
