@@ -118,5 +118,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/turbo-moto-racer/",
     "tag": "Racing",
     "desc": "Speed through traffic, complete missions, and upgrade your bike."
+  },
+  {
+    "name": "Monster Tracks",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/monster-tracks/",
+    "tag": "Cars",
+    "desc": "Monster Tracks lets you drive a blocky monster truck through challenging obstacle courses. Navigate ramps, bridges, and collect coins in this physics-based game."
   }
 ]
