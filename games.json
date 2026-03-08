@@ -76,5 +76,11 @@
     "url": "https://studyquick.lbry.ru/storage/ag/arsenic/dune/",
     "tag": "Arcade",
     "desc": "Jump above the line to score, but beware! The higher you get, the harder the landing will be! Don't crash and keep it smooth!"
+  },
+  {
+    "name": "Territorial",
+    "url": "https://studyquick.lbry.ru/storage/ag/originals/territorial/",
+    "tag": "War",
+    "desc": "Intense conquest gameplay where rounds can finish in less than 5 minutes."
   }
 ]
