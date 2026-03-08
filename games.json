@@ -120,10 +120,41 @@
     "desc": "Speed through traffic, complete missions, and upgrade your bike."
   },
   {
+<<<<<<< HEAD
     "name": "Lunex.io",
     "url": "games/lunex-io.html",
     "tag": ".io",
     "desc": "Absorb data, avoid viruses, and become the biggest node in the network."
+=======
+    "name": "Monster Tracks",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/monster-tracks/",
+    "tag": "Cars",
+    "desc": "Monster Tracks lets you drive a blocky monster truck through challenging obstacle courses. Navigate ramps, bridges, and collect coins in this physics-based game."
+  },
+  {
+    "name": "Highway Racer 2",
+    "url": "https://studyquick.lbry.ru/storage/ag/gn/568.html",
+    "tag": "Racing",
+    "desc": "a high-speed racing game that puts your driving skills to the test"
+  },
+  {
+    "name": "Blumgi Racers",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/blumgi-racers/",
+    "tag": "Racing",
+    "desc": "A fun racing game that puts your driving skills to the ultimate test!"
+  },
+  {
+    "name": "Bacon May Die",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/bacon-may-die/",
+    "tag": "Combat",
+    "desc": "Bacon May Die lets you blast through hordes of enemies in this action-packed platformer. The game features cartoon violence, physics-based combat"
+  },
+  {
+    "name": "Bullet Bros",
+    "url": "https://studyquick.lbry.ru/storage/ag/arsenic/bullet-bros/",
+    "tag": "Shooter",
+    "desc": "Bullet Bros lets you solve physics-based puzzles by shooting enemies."
+>>>>>>> 7e5414f3b879f3dcef230d5864ad9114c44906c5
   }
 
 ]
