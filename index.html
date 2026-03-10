@@ -18,7 +18,6 @@
     }
     *{box-sizing:border-box}
     
-    /* Custom Dark Scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg0); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
@@ -26,7 +25,6 @@
 
     html,body{height:100%; margin:0; background: var(--bg0); color:var(--txt); font-family: Inter, system-ui, sans-serif; overflow: hidden;}
     
-    /* Dynamic Mesh Background */
     .bg-mesh {
       position: fixed; inset: 0; z-index: -2; pointer-events: none;
       background: radial-gradient(1000px circle at 15% 10%, rgba(139, 92, 246, 0.15), transparent 60%),
@@ -35,34 +33,22 @@
     }
     #particles-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 
-    /* ====== V2 LAYOUT: APP SHELL ====== */
-    .app-shell { display: flex; height: 100vh; width: 100vw; }
+    /* ====== CLASSIC DASHBOARD ====== */
+    .app-shell { display: flex; height: 100vh; width: 100vw; transition: opacity 0.3s ease; }
+    .app-shell.hidden { opacity: 0; pointer-events: none; display: none; }
     
-    /* ====== GHOST SIDEBAR ====== */
-    .sidebar {
-      width: 76px; height: calc(100vh - 24px); margin: 12px 0 12px 12px;
-      background: var(--glass); backdrop-filter: blur(24px); border: 1px solid var(--stroke);
-      border-radius: var(--r1); display: flex; flex-direction: column; align-items: center;
-      transition: width 0.4s var(--ease); overflow: hidden; white-space: nowrap; z-index: 100;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.3);
-    }
+    .sidebar { width: 76px; height: calc(100vh - 24px); margin: 12px 0 12px 12px; background: var(--glass); backdrop-filter: blur(24px); border: 1px solid var(--stroke); border-radius: var(--r1); display: flex; flex-direction: column; align-items: center; transition: width 0.4s var(--ease); overflow: hidden; white-space: nowrap; z-index: 100; box-shadow: 10px 0 30px rgba(0,0,0,0.3); }
     .sidebar:hover { width: 240px; align-items: flex-start; }
-    
     .sb-brand { display: flex; align-items: center; gap: 16px; padding: 20px; width: 100%; cursor:pointer; }
     .logo-mark { width: 36px; height: 36px; min-width: 36px; border-radius: 12px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: 900; font-family: 'Space Grotesk'; font-size: 18px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
     .sb-brand-text { font-family: 'Space Grotesk'; font-weight: 800; font-size: 20px; opacity: 0; transition: opacity 0.3s; }
     .sidebar:hover .sb-brand-text { opacity: 1; }
 
     .sb-nav { display: flex; flex-direction: column; width: 100%; padding: 0 12px; gap: 8px; flex: 1; margin-top: 10px; }
-    .sb-tab {
-      display: flex; align-items: center; gap: 16px; width: 100%; padding: 12px; border-radius: 14px;
-      background: transparent; border: 1px solid transparent; color: var(--muted); cursor: pointer;
-      transition: all 0.3s var(--ease); font-weight: 600; font-size: 14px; outline: none;
-    }
+    .sb-tab { display: flex; align-items: center; gap: 16px; width: 100%; padding: 12px; border-radius: 14px; background: transparent; border: 1px solid transparent; color: var(--muted); cursor: pointer; transition: all 0.3s var(--ease); font-weight: 600; font-size: 14px; outline: none; }
     .sb-icon { width: 22px; height: 22px; min-width: 22px; opacity: 0.7; transition: 0.3s; }
     .sb-tab-text { opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateX(-10px); }
     .sidebar:hover .sb-tab-text { opacity: 1; transform: translateX(0); }
-    
     .sb-tab:hover { background: rgba(255,255,255,.05); color: var(--txt); }
     .sb-tab:hover .sb-icon { opacity: 1; transform: scale(1.1); }
     .sb-tab.active { background: rgba(255,255,255,.1); border-color: var(--stroke); color: var(--txt); box-shadow: 0 4px 15px rgba(0,0,0,.2); }
@@ -76,47 +62,31 @@
     .xp-title { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
     .xp-val { font-size: 13px; font-weight: 700; color: var(--txt); }
 
-    /* ====== MAIN CONTENT AREA ====== */
     .main-wrap { flex: 1; padding: 12px 16px 12px 24px; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; height: 100vh; scroll-behavior: smooth; }
-    
-    /* Top Header */
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 12px; }
     .page-title { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 12px; }
     .header-actions { display: flex; gap: 12px; }
 
-    .btn {
-      border:0; border-radius: 999px; padding: 10px 20px; background: linear-gradient(135deg, var(--brand2), var(--brand3));
-      color: #030810; font-weight: 800; cursor:pointer; transition: all .3s var(--ease); box-shadow: 0 4px 15px rgba(16,185,129,.3); font-size: 14px;
-    }
+    .btn { border:0; border-radius: 999px; padding: 10px 20px; background: linear-gradient(135deg, var(--brand2), var(--brand3)); color: #030810; font-weight: 800; cursor:pointer; transition: all .3s var(--ease); box-shadow: 0 4px 15px rgba(16,185,129,.3); font-size: 14px; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,.5); filter: brightness(1.1); }
-    
-    .ghost {
-      border: 1px solid var(--stroke); background: rgba(0,0,0,.2); color: var(--txt); border-radius: 999px;
-      padding: 10px 18px; cursor:pointer; font-weight: 600; font-size: 13px; transition: all .3s var(--ease);
-    }
+    .ghost { border: 1px solid var(--stroke); background: rgba(0,0,0,.2); color: var(--txt); border-radius: 999px; padding: 10px 18px; cursor:pointer; font-weight: 600; font-size: 13px; transition: all .3s var(--ease); }
     .ghost:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); transform: translateY(-2px); }
 
-    /* Views */
     .view { display: none; flex-direction: column; animation: fadeSlideUp 0.4s var(--ease) forwards; }
     .view.active { display: flex; }
     @keyframes fadeSlideUp { from{opacity:0; transform: translateY(15px)} to{opacity:1; transform: translateY(0)} }
 
-    /* Panels & Grids */
     .glass-panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r1); padding: 24px; backdrop-filter: blur(16px); margin-bottom: 24px; box-shadow: var(--shadow); }
     .searchRow { display:flex; gap:12px; margin-bottom: 20px; }
     .search { flex:1; border-radius: 14px; padding: 14px 20px; background: rgba(0,0,0,.3); border: 1px solid var(--stroke); color: var(--txt); outline:none; font-size: 15px; transition: all .3s var(--ease); font-family: Inter, sans-serif; }
     .search:focus { border-color: var(--brand1); background: rgba(0,0,0,.5); box-shadow: 0 0 0 4px rgba(139,92,246,.15); }
-    
     .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 20px; }
     .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(0,0,0,.3); color: var(--muted); cursor:pointer; font-weight: 600; font-size: 13px; transition: all .2s var(--ease); }
     .chip.active { color: #fff; background: rgba(139,92,246,.2); border-color: var(--brand1); box-shadow: 0 4px 15px rgba(139,92,246,.2); }
     .chip:hover:not(.active) { background: rgba(255,255,255,.1); color: var(--txt); }
 
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .card {
-      border-radius: var(--r2); border: 1px solid var(--stroke); background: rgba(0,0,0,.4); overflow:hidden;
-      cursor:pointer; transition: all .4s var(--ease); position: relative;
-    }
+    .card { border-radius: var(--r2); border: 1px solid var(--stroke); background: rgba(0,0,0,.4); overflow:hidden; cursor:pointer; transition: all .4s var(--ease); position: relative; }
     .card:hover { transform: translateY(-6px); border-color: rgba(139, 92, 246, 0.5); background: rgba(255,255,255,.05); box-shadow: 0 15px 35px rgba(0,0,0,.4), 0 0 20px rgba(139,92,246,.15); }
     .thumb { width:100%; height: 140px; background: #000; object-fit: cover; transition: transform .5s var(--ease); }
     .card:hover .thumb { transform: scale(1.05); }
@@ -126,7 +96,6 @@
     .cMeta { margin-top: 14px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
     .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--muted); text-transform: uppercase; }
 
-    /* ====== COMMAND CENTER ====== */
     .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 900px) { .cmd-grid { grid-template-columns: 1fr; } }
     .cmd-box { background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); border-radius: 16px; padding: 24px; }
@@ -136,7 +105,6 @@
     .cmd-label { font-weight: 600; font-size: 14px; }
     .cmd-sub { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
     
-    /* Toggle Switch */
     .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--stroke); }
@@ -144,24 +112,20 @@
     input:checked + .slider { background-color: var(--brand2); border-color: var(--brand2); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Keybinder */
     .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand1); color: var(--brand1); padding: 6px 16px; border-radius: 8px; font-family: monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .keybind-btn:hover { background: rgba(139,92,246,0.2); }
     .keybind-btn.listening { background: var(--brand1); color: #fff; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
     .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; font-family: Inter; }
 
-    /* ====== VIEWS (Browser, AI) ====== */
     #view-browser, #view-clips, #view-music, #view-chat { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; overflow: hidden; }
     #view-browser, #view-music { border: 1px solid var(--stroke); border-radius: var(--r1); }
-    
     .lunex-browser-container { display: flex; flex-direction: column; height: 100%; background: #000; }
     .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.9); border-bottom: 1px solid var(--stroke); }
     .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
     .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .browser-url-bar { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; }
     
-    /* AI Chat */
     .chat-input-wrapper { background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 16px; display: flex; align-items: center; padding: 10px 16px; gap: 12px; transition: border-color 0.3s; margin-top: 10px; }
     .chat-input-wrapper:focus-within { border-color: var(--brand1); }
     .input-icon { width: 20px; height: 20px; color: var(--muted); stroke: currentColor; fill: none; stroke-width: 2; }
@@ -180,15 +144,40 @@
     .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
     .overlay.open { display:flex; }
     @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-    
     .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); overflow: hidden; border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
     .overlay.open .player { transform: scale(1); }
     .playerbar { padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--bg1); border-bottom: 1px solid var(--stroke); }
     .frameWrap { flex:1; background: #000; }
     iframe { width:100%; height:100%; border:0; }
     .modal-box { background: rgba(15, 20, 35, 0.95); padding: 32px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 440px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); text-align: center; }
-    
     svg { width: 22px; height: 22px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ====== LUNEX OS (DESKTOP MODE) ====== */
+    #lunex-desktop { display: none; position: fixed; inset: 0; z-index: 50; overflow: hidden; background: transparent; }
+    #lunex-desktop.active { display: block; animation: fadeIn 0.5s ease; }
+    
+    .os-window { position: absolute; background: var(--bg1); border: 1px solid var(--stroke); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transition: opacity 0.2s, transform 0.2s; min-width: 300px; min-height: 200px; }
+    .os-window.minimized { opacity: 0; transform: translateY(100px) scale(0.8); pointer-events: none; }
+    
+    .os-titlebar { background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--stroke); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; }
+    .os-titlebar:active { cursor: grabbing; }
+    .os-title-text { font-family: 'Space Grotesk'; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .os-controls { display: flex; gap: 8px; }
+    .os-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; }
+    .os-btn-close { background: #ef4444; }
+    .os-btn-min { background: #facc15; }
+    .os-btn-max { background: #10b981; }
+    .os-content { flex: 1; background: #000; position: relative; }
+    
+    /* Taskbar */
+    .os-taskbar { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--stroke); border-radius: 20px; padding: 8px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; }
+    .os-start-btn { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: 900; font-family: 'Space Grotesk'; cursor: pointer; transition: 0.2s; }
+    .os-start-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+    .os-task-items { display: flex; gap: 8px; border-left: 1px solid var(--stroke); padding-left: 12px; }
+    .os-task-item { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .os-task-item:hover { background: rgba(255,255,255,0.1); }
+    .os-task-item.active { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.5); color: white; }
+    .os-clock { margin-left: 12px; font-family: monospace; font-size: 14px; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -204,14 +193,20 @@
   <div class="bg-mesh"></div>
   <canvas id="particles-canvas"></canvas>
 
-  <div class="app-shell">
-    
+  <div id="lunex-desktop">
+      <div class="os-taskbar">
+          <div class="os-start-btn" onclick="toggleDesktopMode()" title="Return to Dashboard">L</div>
+          <div class="os-task-items" id="os-taskbar-list"></div>
+          <div class="os-clock" id="os-clock">00:00</div>
+      </div>
+  </div>
+
+  <div class="app-shell" id="classic-dashboard">
     <nav class="sidebar">
       <div class="sb-brand" onclick="window.location.reload()">
         <div class="logo-mark">L</div>
         <div class="sb-brand-text">Lunex</div>
       </div>
-      
       <div class="sb-nav" id="nav">
         <button class="sb-tab active" data-view="play">
           <svg class="sb-icon"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-4h.01M14 14h.01"/></svg>
@@ -242,20 +237,12 @@
           <span class="sb-tab-text">Settings</span>
         </button>
       </div>
-
       <div class="sb-foot">
-        <div class="xp-pill" id="levelPill">
-          <div class="xp-circle" id="lv">1</div>
-          <div class="xp-info">
-            <span class="xp-title">Current XP</span>
-            <span class="xp-val" id="xp">0</span>
-          </div>
-        </div>
+        <div class="xp-pill" id="levelPill"><div class="xp-circle" id="lv">1</div><div class="xp-info"><span class="xp-title">Current XP</span><span class="xp-val" id="xp">0</span></div></div>
       </div>
     </nav>
 
     <main class="main-wrap">
-      
       <section class="view active" id="view-play">
         <div class="top-header">
           <h1 class="page-title">🎮 Library</h1>
@@ -285,6 +272,17 @@
         <div class="top-header"><h1 class="page-title"><svg><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg> Command Center</h1></div>
         
         <div class="cmd-grid">
+          <div class="cmd-box" style="border-color: rgba(14, 165, 233, 0.3); background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent); grid-column: 1 / -1;">
+            <h2 class="cmd-title"><svg style="stroke: var(--brand3)"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Operating System Mode</h2>
+            <div class="cmd-row">
+              <div>
+                <span class="cmd-label">Enable Lunex OS (Beta)</span>
+                <span class="cmd-sub">Transforms the website into a windowed, multitasking desktop environment.</span>
+              </div>
+              <label class="toggle"><input type="checkbox" id="osModeToggle" onchange="toggleDesktopMode()"><span class="slider"></span></label>
+            </div>
+          </div>
+
           <div class="cmd-box" style="border-color: rgba(139,92,246,0.3); background: radial-gradient(circle at top right, rgba(139,92,246,0.1), transparent);">
             <h2 class="cmd-title"><svg style="stroke: var(--brand1)"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Stealth Systems</h2>
             <div class="cmd-row">
@@ -383,7 +381,6 @@
            <button id="chatSend"><svg viewBox="0 0 24 24" style="transform: rotate(45deg); width: 22px; height: 22px;"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
         </div>
       </section>
-
     </main>
   </div>
 
@@ -431,7 +428,7 @@
     </div>
   </div>
   
-  <script src="/patch.js?v=33" defer></script>
+  <script src="/patch.js?v=34" defer></script>
   <script>
     function resetProxy() { document.getElementById('lunex-proxy-frame').src = "https://3d.manicresin.com/"; }
     function reloadProxy() { const f = document.getElementById('lunex-proxy-frame'); f.src = f.src; }

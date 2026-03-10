@@ -32,8 +32,8 @@
   }
 
   const DISCORD_LINK = "https://discord.gg/5Nw5sd7qTB"; 
-  const MOTD_TITLE = "Lunex V2.2 is Online 🚀";
-  const MOTD_TEXT = "Welcome to the ultimate stealth experience. Check out the new Settings panel to set up your Panic Key and Tab Disguise!";
+  const MOTD_TITLE = "Lunex V2.4 is Online 🚀";
+  const MOTD_TEXT = "Welcome to Lunex OS. Check settings to enable the new windowed desktop environment!";
 
   const $ = (q, root = document) => root.querySelector(q);
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
@@ -52,7 +52,7 @@
     const lines = [
       "Initializing core subsystems...",
       "Bypassing network firewalls...",
-      "Arming stealth protocols...",
+      "Loading Lunex Window Manager...",
       "Injecting game modules...",
       "ACCESS GRANTED."
     ];
@@ -110,11 +110,13 @@
     const bindBtn = $("#panicBindBtn");
     const targetSelect = $("#panicTargetSelect");
     const disguiseToggle = $("#disguiseToggle");
+    const osToggle = $("#osModeToggle");
     
     if(!bindBtn) return;
     bindBtn.textContent = panicKey;
     if(targetSelect) targetSelect.value = panicTarget;
     if(disguiseToggle) disguiseToggle.checked = disguiseActive;
+    if(osToggle) osToggle.checked = isOSMode;
 
     bindBtn.addEventListener("click", () => {
       bindBtn.textContent = "Press any key...";
@@ -294,17 +296,189 @@
   }
 
   // ======================
-  //  Game Player Controls
+  //  LUNEX OS: WINDOW MANAGER
+  // ======================
+  let isOSMode = localStorage.getItem("lunex_os_mode") === "true";
+  let activeWindows = [];
+  let zIndexCounter = 100;
+
+  window.toggleDesktopMode = function() {
+    isOSMode = !isOSMode;
+    localStorage.setItem("lunex_os_mode", isOSMode);
+    
+    if (isOSMode) {
+      $("#classic-dashboard").classList.add("hidden");
+      $("#lunex-desktop").classList.add("active");
+      pulseToast("Booting Lunex OS...");
+      startClock();
+    } else {
+      $("#classic-dashboard").classList.remove("hidden");
+      $("#lunex-desktop").classList.remove("active");
+    }
+  };
+
+  function startClock() {
+    setInterval(() => {
+      const now = new Date();
+      $("#os-clock").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }, 1000);
+  }
+
+  function bringToFront(winId) {
+    const win = document.getElementById(winId);
+    if(win) {
+      zIndexCounter++;
+      win.style.zIndex = zIndexCounter;
+      // Update taskbar highlights
+      $$('.os-task-item').forEach(btn => btn.classList.remove('active'));
+      const tBtn = document.getElementById(`task-${winId}`);
+      if(tBtn) tBtn.classList.add('active');
+    }
+  }
+
+  function spawnWindow(title, url) {
+    const winId = 'win-' + Date.now();
+    const desktop = $("#lunex-desktop");
+    
+    // Create Window
+    const win = document.createElement("div");
+    win.className = "os-window";
+    win.id = winId;
+    win.style.width = "800px";
+    win.style.height = "550px";
+    win.style.left = (window.innerWidth / 2 - 400 + (Math.random() * 50 - 25)) + "px";
+    win.style.top = (window.innerHeight / 2 - 275 + (Math.random() * 50 - 25)) + "px";
+    zIndexCounter++;
+    win.style.zIndex = zIndexCounter;
+
+    win.innerHTML = `
+      <div class="os-titlebar" id="bar-${winId}">
+        <div class="os-title-text"><svg width="14" height="14"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-4h.01M14 14h.01"/></svg> ${title}</div>
+        <div class="os-controls">
+          <button class="os-btn os-btn-min" onclick="minimizeWindow('${winId}')"></button>
+          <button class="os-btn os-btn-max" onclick="maximizeWindow('${winId}')"></button>
+          <button class="os-btn os-btn-close" onclick="closeWindow('${winId}')"></button>
+        </div>
+      </div>
+      <div class="os-content">
+        <iframe src="${url}" style="width:100%; height:100%; border:none; background:#000;"></iframe>
+      </div>
+    `;
+    desktop.appendChild(win);
+    activeWindows.push({ id: winId, title: title, minimized: false });
+
+    // Drag Logic
+    const titleBar = win.querySelector(`#bar-${winId}`);
+    let isDragging = false, startX, startY, initialLeft, initialTop;
+
+    titleBar.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX; startY = e.clientY;
+      initialLeft = win.offsetLeft; initialTop = win.offsetTop;
+      bringToFront(winId);
+      
+      // Prevent iframe from eating mouse events during drag
+      win.querySelector('iframe').style.pointerEvents = 'none';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      win.style.left = (initialLeft + (e.clientX - startX)) + 'px';
+      win.style.top = (initialTop + (e.clientY - startY)) + 'px';
+    });
+
+    window.addEventListener('mouseup', () => {
+      if(isDragging) {
+        isDragging = false;
+        win.querySelector('iframe').style.pointerEvents = 'auto';
+      }
+    });
+
+    win.addEventListener('mousedown', () => bringToFront(winId));
+    
+    updateTaskbar();
+    addXP(4);
+    startPlaytime();
+  }
+
+  window.closeWindow = function(winId) {
+    document.getElementById(winId)?.remove();
+    activeWindows = activeWindows.filter(w => w.id !== winId);
+    updateTaskbar();
+    if(activeWindows.length === 0) stopPlaytime();
+  };
+
+  window.minimizeWindow = function(winId) {
+    const win = document.getElementById(winId);
+    const winData = activeWindows.find(w => w.id === winId);
+    if(win && winData) {
+      win.classList.add("minimized");
+      winData.minimized = true;
+      updateTaskbar();
+    }
+  };
+
+  window.maximizeWindow = function(winId) {
+    const win = document.getElementById(winId);
+    if(win) {
+      if (win.style.width === "100vw") {
+        win.style.width = "800px"; win.style.height = "550px";
+        win.style.left = "10%"; win.style.top = "10%";
+      } else {
+        win.style.width = "100vw"; win.style.height = "calc(100vh - 52px)";
+        win.style.left = "0"; win.style.top = "0";
+      }
+      bringToFront(winId);
+    }
+  }
+
+  window.restoreWindow = function(winId) {
+    const win = document.getElementById(winId);
+    const winData = activeWindows.find(w => w.id === winId);
+    if(win && winData) {
+      win.classList.remove("minimized");
+      winData.minimized = false;
+      bringToFront(winId);
+      updateTaskbar();
+    }
+  };
+
+  function updateTaskbar() {
+    const taskList = $("#os-taskbar-list");
+    if(!taskList) return;
+    taskList.innerHTML = "";
+    activeWindows.forEach(w => {
+      const btn = document.createElement("button");
+      btn.className = `os-task-item ${!w.minimized ? 'active' : ''}`;
+      btn.id = `task-${w.id}`;
+      btn.innerText = w.title;
+      btn.onclick = () => {
+        if(w.minimized) restoreWindow(w.id);
+        else bringToFront(w.id);
+      };
+      taskList.appendChild(btn);
+    });
+  }
+
+  // ======================
+  //  Game Player Controls (Hybrid)
   // ======================
   function openGame(game) { 
-    const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
-    if (!overlay || !frame) return; 
-    pTitle.textContent = game.name; 
-    frame.src = game.url; 
-    const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
-    overlay.classList.add("open"); 
-    addXP(3); 
-    startPlaytime(); 
+    if (isOSMode) {
+      // In OS Mode, spawn a window and return to desktop
+      spawnWindow(game.name, game.url);
+      $("#classic-dashboard").classList.add("hidden");
+    } else {
+      // Classic Overlay
+      const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
+      if (!overlay || !frame) return; 
+      pTitle.textContent = game.name; 
+      frame.src = game.url; 
+      const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
+      overlay.classList.add("open"); 
+      addXP(3); 
+      startPlaytime(); 
+    }
   }
 
   function closeGame() { 
@@ -697,6 +871,13 @@
   //  THE MASTER INIT
   // ======================
   function init() {
+    // If OS mode was saved as true, launch it immediately
+    if (isOSMode) {
+      $("#classic-dashboard").classList.add("hidden");
+      $("#lunex-desktop").classList.add("active");
+      startClock();
+    }
+
     try { runBootSequence(); } catch(e) { console.error("Boot Err:", e); }
     try { syncLevelUI(); checkDailyPopup(); initSettings(); } catch(e) { console.error("UI Setup Err:", e); }
     
@@ -711,12 +892,11 @@
       
       $("#shuffleGames")?.addEventListener("click", () => {
         for (let i = gameList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [gameList[i], gameList[j]] = [gameList[j], gameList[i]]; }
-        renderGames(true); addXP(1); // Call renderGames with reset!
+        renderGames(true); addXP(1); 
       });
       
       $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
       
-      // SEARCH CALLS RESET TO PREVENT GLITCHES
       $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(true); });
       $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
 
@@ -762,7 +942,6 @@
       renderApps();
       renderProfile(); 
       
-      // INJECT AND OBSERVE THE INFINITE SCROLL SENTINEL
       let sentinel = document.createElement("div");
       sentinel.id = "gameScrollSentinel";
       sentinel.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div> <span style="margin-left:12px; font-family:'Space Grotesk'; font-size: 15px;">Loading Network Modules...</span>`;
@@ -773,7 +952,6 @@
 
       const observer = new IntersectionObserver((entries) => {
           if(entries[0].isIntersecting) {
-              // Add a tiny delay so the user actually sees the cool loading animation
               setTimeout(() => renderGames(false), 300);
           }
       }, { root: document.querySelector(".main-wrap"), rootMargin: "100px" });
