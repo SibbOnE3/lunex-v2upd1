@@ -152,7 +152,6 @@
       let h = pCanvas.height = window.innerHeight;
       let particles = [];
 
-      // Create 80 glowing, drifting orbs
       for (let i = 0; i < 80; i++) {
           particles.push({
               x: Math.random() * w,
@@ -160,7 +159,7 @@
               r: Math.random() * 3 + 1,
               dx: (Math.random() - 0.5) * 0.6,
               dy: (Math.random() - 0.5) * 0.6,
-              color: Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233', // Purple or Blue
+              color: Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233', 
               alpha: Math.random() * 0.5 + 0.1
           });
       }
@@ -169,15 +168,12 @@
           ctx.clearRect(0, 0, w, h);
           
           particles.forEach((p, index) => {
-              // Move
               p.x += p.dx;
               p.y += p.dy;
               
-              // Bounce off edges smoothly
               if (p.x < 0 || p.x > w) p.dx *= -1;
               if (p.y < 0 || p.y > h) p.dy *= -1;
 
-              // Draw Particle
               ctx.beginPath();
               ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
               ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
@@ -185,7 +181,6 @@
               ctx.shadowColor = `rgba(${p.color}, 0.8)`;
               ctx.fill();
 
-              // Draw subtle connecting lines to nearby particles
               for (let j = index + 1; j < particles.length; j++) {
                   let p2 = particles[j];
                   let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
@@ -210,7 +205,7 @@
   }
 
   // ======================
-  //  SYSTEM UI
+  //  SYSTEM UI & DAILY PROMO
   // ======================
   function checkDailyPopup() {
     const today = new Date().toDateString();
@@ -222,6 +217,19 @@
         modal.classList.add("open");
         $("#motdDoneBtn")?.addEventListener("click", () => { localStorage.setItem("lunex_last_motd", today); modal.classList.remove("open"); }, { once: true });
       }
+    }
+    
+    // DAILY BETA PROMO BANNER (Only if not already in OS mode)
+    if (!isOSMode && localStorage.getItem("lunex_beta_promo") !== today) {
+        const banner = document.getElementById("beta-promo-banner");
+        if (banner) {
+            banner.style.display = "flex";
+            setTimeout(() => {
+                banner.style.transform = "translateY(-150%)";
+                setTimeout(() => banner.style.display = "none", 600);
+                localStorage.setItem("lunex_beta_promo", today);
+            }, 10000); // Leaves after 10 seconds
+        }
     }
   }
 
@@ -305,12 +313,20 @@
     if (isOSMode) {
       $("#classic-dashboard").classList.add("hidden");
       $("#lunex-desktop").classList.add("active");
+      
+      // Hide promo banner if they toggle OS manually
+      const banner = document.getElementById("beta-promo-banner");
+      if(banner) banner.style.display = "none";
+      
       pulseToast("Booting Lunex OS...");
       startClock();
     } else {
       $("#classic-dashboard").classList.remove("hidden");
       $("#lunex-desktop").classList.remove("active");
     }
+    
+    const osToggle = $("#osModeToggle");
+    if(osToggle) osToggle.checked = isOSMode;
   };
 
   function startClock() {
@@ -319,6 +335,19 @@
       $("#os-clock").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }, 1000);
   }
+
+  // DESKTOP CONTEXT MENU LOGIC
+  document.addEventListener("contextmenu", (e) => {
+      if (!isOSMode) return;
+      // Only show on desktop background, not on windows/taskbar
+      if (e.target.id === "lunex-desktop") {
+          e.preventDefault();
+          const ctxMenu = document.getElementById("os-context-menu");
+          ctxMenu.style.display = "flex";
+          ctxMenu.style.left = e.clientX + "px";
+          ctxMenu.style.top = e.clientY + "px";
+      }
+  });
 
   window.toggleStartMenu = function() {
     const sm = document.getElementById("os-start-menu");
@@ -338,12 +367,22 @@
     if (sm && sm.classList.contains("open") && !sm.contains(e.target) && !btn.contains(e.target)) {
         sm.classList.remove("open");
     }
+    
+    // Hide context menu on normal click
+    const ctxMenu = document.getElementById("os-context-menu");
+    if (ctxMenu && ctxMenu.style.display === "flex") {
+        ctxMenu.style.display = "none";
+    }
   });
 
   window.populateStartMenu = function(query) {
     const grid = document.getElementById("sm-app-grid");
     if (!grid || !GAMES) return;
     grid.innerHTML = "";
+    
+    // Ensure profile name is updated in start menu
+    const nameStr = localStorage.getItem("lunex_name") || "Player";
+    if(document.getElementById("sm-user-name")) document.getElementById("sm-user-name").innerText = nameStr;
     
     const q = (query || "").toLowerCase().trim();
     const filtered = GAMES.filter(g => !q || (g.name||"").toLowerCase().includes(q) || (g.tag||"").toLowerCase().includes(q));
@@ -373,6 +412,12 @@
     if(win) {
       zIndexCounter++;
       win.style.zIndex = zIndexCounter;
+      
+      // Highlight active window
+      $$('.os-window').forEach(w => w.classList.remove('active-window'));
+      win.classList.add('active-window');
+
+      // Update taskbar highlights
       $$('.os-task-item').forEach(btn => btn.classList.remove('active'));
       const tBtn = document.getElementById(`task-${winId}`);
       if(tBtn) tBtn.classList.add('active');
@@ -426,6 +471,11 @@
       bringToFront(winId);
       win.querySelector('iframe').style.pointerEvents = 'none';
     });
+    
+    // Double click to maximize
+    titleBar.addEventListener('dblclick', () => {
+        maximizeWindow(winId);
+    });
 
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
@@ -442,6 +492,7 @@
 
     win.addEventListener('mousedown', () => bringToFront(winId));
     
+    bringToFront(winId); // Focus newly created window
     updateTaskbar();
     addXP(4);
     startPlaytime();
@@ -459,6 +510,7 @@
     const winData = activeWindows.find(w => w.id === winId);
     if(win && winData) {
       win.classList.add("minimized");
+      win.classList.remove("active-window");
       winData.minimized = true;
       updateTaskbar();
     }
@@ -468,11 +520,15 @@
     const win = document.getElementById(winId);
     if(win) {
       if (win.style.width === "100vw") {
+        // Restore to default
         win.style.width = "800px"; win.style.height = "550px";
         win.style.left = "10%"; win.style.top = "10%";
+        win.style.borderRadius = "12px";
       } else {
+        // Maximize
         win.style.width = "100vw"; win.style.height = "calc(100vh - 52px)";
         win.style.left = "0"; win.style.top = "0";
+        win.style.borderRadius = "0";
       }
       bringToFront(winId);
     }
@@ -500,7 +556,7 @@
       btn.innerText = w.title;
       btn.onclick = () => {
         if(w.minimized) restoreWindow(w.id);
-        else bringToFront(w.id);
+        else bringToFront(w.id); // If already open, just bring to front
       };
       taskList.appendChild(btn);
     });
@@ -786,6 +842,9 @@
     const name = localStorage.getItem("lunex_name") || "Player";
     const playtime = formatPT(getInt("lunex_playtime", 0));
     
+    // Also update start menu profile if it exists
+    if(document.getElementById("sm-user-name")) document.getElementById("sm-user-name").innerText = name;
+
     profileBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:16px; margin-bottom: 20px;">
         <div style="width:64px; height:64px; border-radius:16px; display:grid; place-items:center; background:rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
