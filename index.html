@@ -12,36 +12,93 @@
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "13b38a789fcb45d29543e883ff0524e3"}'></script>
   <style>
     :root{
-      --bg0: #03050a; --bg1: #0a0f1d; --glass: rgba(15, 20, 35, 0.7); --stroke: rgba(255,255,255,.08);
-      --txt: rgba(255,255,255,.95); --muted: rgba(255,255,255,.55); --brand1: #8b5cf6; --brand2: #10b981; --brand3: #0ea5e9;
+      --bg0: #03050a; --bg1: #0a0f1d; 
+      --glass: rgba(15, 20, 35, 0.45); /* More transparent for particle visibility */
+      --stroke: rgba(255,255,255,.08);
+      --txt: rgba(255,255,255,.95); --muted: rgba(255,255,255,.55); 
+      --brand1: #8b5cf6; --brand2: #10b981; --brand3: #0ea5e9;
       --shadow: 0 24px 60px rgba(0,0,0,.60); --r1: 24px; --r2: 18px; --ease: cubic-bezier(.2,.8,.2,1);
     }
     *{box-sizing:border-box}
     
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg0); }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+    ::-webkit-scrollbar { display: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; }
 
     html,body{height:100%; margin:0; background: var(--bg0); color:var(--txt); font-family: Inter, system-ui, sans-serif; overflow: hidden;}
     
+    /* Animated Mesh Background */
     .bg-mesh {
-      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background: radial-gradient(1000px circle at 15% 10%, rgba(139, 92, 246, 0.15), transparent 60%),
                   radial-gradient(1200px circle at 85% 20%, rgba(14, 165, 233, 0.12), transparent 60%),
                   radial-gradient(800px circle at 50% 90%, rgba(16, 185, 129, 0.1), transparent 60%);
+      animation: breathe 15s infinite alternate ease-in-out;
     }
-    #particles-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+    @keyframes breathe { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 1; transform: scale(1.05); } }
+    
+    /* Particle Engine Canvas */
+    #particles-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* ====== LUNEX OS (DESKTOP MODE) ====== */
+    #lunex-desktop { display: none; position: fixed; inset: 0; z-index: 50; overflow: hidden; background: transparent; }
+    #lunex-desktop.active { display: block; animation: fadeIn 0.5s ease; }
+    
+    .os-window { position: absolute; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--stroke); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 20px rgba(139, 92, 246, 0.15); transition: opacity 0.2s, transform 0.2s; min-width: 300px; min-height: 200px; animation: popIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .os-window.minimized { opacity: 0; transform: translateY(100px) scale(0.8); pointer-events: none; }
+    
+    .os-titlebar { background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--stroke); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; }
+    .os-titlebar:active { cursor: grabbing; }
+    .os-title-text { font-family: 'Space Grotesk'; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .os-controls { display: flex; gap: 8px; }
+    .os-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: 0.2s; }
+    .os-btn:hover { filter: brightness(1.3); }
+    .os-btn-close { background: #ef4444; }
+    .os-btn-min { background: #facc15; }
+    .os-btn-max { background: #10b981; }
+    .os-content { flex: 1; background: #000; position: relative; }
+    
+    /* OS Icons & Start Menu */
+    .desktop-icons { position: absolute; top: 20px; left: 20px; display: flex; flex-direction: column; gap: 24px; z-index: 10; }
+    .d-icon { width: 72px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s; }
+    .d-icon:hover { transform: scale(1.05); }
+    .d-icon-img { width: 52px; height: 52px; border-radius: 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); display: grid; place-items: center; font-size: 24px; backdrop-filter: blur(8px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .d-icon span { font-size: 12px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.9); text-align: center; }
+
+    #os-start-menu { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(20px); width: 440px; background: rgba(15, 20, 35, 0.85); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 10000; display: flex; flex-direction: column; }
+    #os-start-menu.open { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .sm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .sm-title { font-family: 'Space Grotesk'; font-size: 20px; font-weight: 800; color: white;}
+    .sm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 8px; }
+    .sm-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 12px; transition: background 0.2s; }
+    .sm-item:hover { background: rgba(255,255,255,0.1); }
+    .sm-item img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: #111; }
+    .sm-item span { font-size: 11px; font-weight: 600; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.8); }
+
+    /* Taskbar */
+    .os-taskbar { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(15, 20, 35, 0.6); backdrop-filter: blur(24px); border: 1px solid var(--stroke); border-radius: 20px; padding: 8px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 9999; }
+    .os-start-btn { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border: 1px solid rgba(255,255,255,0.2); display: grid; place-items: center; cursor: pointer; transition: 0.3s; }
+    .os-start-btn:hover { transform: scale(1.05); background: rgba(255,255,255,0.15); box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); border-color: var(--brand1); }
+    .os-start-btn img { width: 22px; height: 22px; object-fit: contain; }
+    
+    .os-task-items { display: flex; gap: 8px; border-left: 1px solid var(--stroke); padding-left: 12px; }
+    .os-task-item { padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .os-task-item:hover { background: rgba(255,255,255,0.1); }
+    .os-task-item.active { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.5); color: white; }
+    .os-clock { margin-left: 12px; font-family: monospace; font-size: 14px; color: var(--muted); font-weight: 600; }
 
     /* ====== CLASSIC DASHBOARD ====== */
-    .app-shell { display: flex; height: 100vh; width: 100vw; transition: opacity 0.3s ease; }
+    .app-shell { display: flex; height: 100vh; width: 100vw; transition: opacity 0.3s ease; position: relative; z-index: 10; }
     .app-shell.hidden { opacity: 0; pointer-events: none; display: none; }
     
-    .sidebar { width: 76px; height: calc(100vh - 24px); margin: 12px 0 12px 12px; background: var(--glass); backdrop-filter: blur(24px); border: 1px solid var(--stroke); border-radius: var(--r1); display: flex; flex-direction: column; align-items: center; transition: width 0.4s var(--ease); overflow: hidden; white-space: nowrap; z-index: 100; box-shadow: 10px 0 30px rgba(0,0,0,0.3); }
+    .sidebar { width: 76px; height: calc(100vh - 24px); margin: 12px 0 12px 12px; background: var(--glass); backdrop-filter: blur(24px); border: 1px solid var(--stroke); border-radius: var(--r1); display: flex; flex-direction: column; align-items: center; transition: width 0.4s var(--ease); overflow: hidden; white-space: nowrap; box-shadow: 10px 0 40px rgba(0,0,0,0.4); }
     .sidebar:hover { width: 240px; align-items: flex-start; }
+    
     .sb-brand { display: flex; align-items: center; gap: 16px; padding: 20px; width: 100%; cursor:pointer; }
-    .logo-mark { width: 36px; height: 36px; min-width: 36px; border-radius: 12px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: 900; font-family: 'Space Grotesk'; font-size: 18px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
-    .sb-brand-text { font-family: 'Space Grotesk'; font-weight: 800; font-size: 20px; opacity: 0; transition: opacity 0.3s; }
+    .logo-mark { width: 36px; height: 36px; min-width: 36px; border-radius: 10px; display: grid; place-items: center; }
+    .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-mark.text-fallback { background: linear-gradient(135deg, var(--brand1), var(--brand3)); font-weight: 900; font-family: 'Space Grotesk'; font-size: 18px; color: white; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+    .sb-brand-text { font-family: 'Space Grotesk'; font-weight: 800; font-size: 22px; opacity: 0; transition: opacity 0.3s; letter-spacing: -0.5px; }
     .sidebar:hover .sb-brand-text { opacity: 1; }
 
     .sb-nav { display: flex; flex-direction: column; width: 100%; padding: 0 12px; gap: 8px; flex: 1; margin-top: 10px; }
@@ -64,129 +121,104 @@
 
     .main-wrap { flex: 1; padding: 12px 16px 12px 24px; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; height: 100vh; scroll-behavior: smooth; }
     .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 12px; }
-    .page-title { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 12px; }
+    .page-title { font-family: 'Space Grotesk'; font-size: 32px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 12px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
     .header-actions { display: flex; gap: 12px; }
 
-    .btn { border:0; border-radius: 999px; padding: 10px 20px; background: linear-gradient(135deg, var(--brand2), var(--brand3)); color: #030810; font-weight: 800; cursor:pointer; transition: all .3s var(--ease); box-shadow: 0 4px 15px rgba(16,185,129,.3); font-size: 14px; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,.5); filter: brightness(1.1); }
-    .ghost { border: 1px solid var(--stroke); background: rgba(0,0,0,.2); color: var(--txt); border-radius: 999px; padding: 10px 18px; cursor:pointer; font-weight: 600; font-size: 13px; transition: all .3s var(--ease); }
-    .ghost:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); transform: translateY(-2px); }
+    .btn { border:0; border-radius: 999px; padding: 12px 24px; background: linear-gradient(135deg, var(--brand2), var(--brand3)); color: #030810; font-weight: 800; cursor:pointer; transition: all .3s var(--ease); box-shadow: 0 4px 20px rgba(16,185,129,.3); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;}
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(16,185,129,.5); filter: brightness(1.15); }
+    .ghost { border: 1px solid var(--stroke); background: rgba(0,0,0,.3); color: var(--txt); border-radius: 999px; padding: 12px 20px; cursor:pointer; font-weight: 600; font-size: 13px; transition: all .3s var(--ease); backdrop-filter: blur(10px); }
+    .ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.3); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
     .view { display: none; flex-direction: column; animation: fadeSlideUp 0.4s var(--ease) forwards; }
     .view.active { display: flex; }
-    @keyframes fadeSlideUp { from{opacity:0; transform: translateY(15px)} to{opacity:1; transform: translateY(0)} }
+    @keyframes fadeSlideUp { from{opacity:0; transform: translateY(20px)} to{opacity:1; transform: translateY(0)} }
 
-    .glass-panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r1); padding: 24px; backdrop-filter: blur(16px); margin-bottom: 24px; box-shadow: var(--shadow); }
-    .searchRow { display:flex; gap:12px; margin-bottom: 20px; }
-    .search { flex:1; border-radius: 14px; padding: 14px 20px; background: rgba(0,0,0,.3); border: 1px solid var(--stroke); color: var(--txt); outline:none; font-size: 15px; transition: all .3s var(--ease); font-family: Inter, sans-serif; }
-    .search:focus { border-color: var(--brand1); background: rgba(0,0,0,.5); box-shadow: 0 0 0 4px rgba(139,92,246,.15); }
-    .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 20px; }
-    .chip { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(0,0,0,.3); color: var(--muted); cursor:pointer; font-weight: 600; font-size: 13px; transition: all .2s var(--ease); }
-    .chip.active { color: #fff; background: rgba(139,92,246,.2); border-color: var(--brand1); box-shadow: 0 4px 15px rgba(139,92,246,.2); }
-    .chip:hover:not(.active) { background: rgba(255,255,255,.1); color: var(--txt); }
+    .glass-panel { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r1); padding: 24px; backdrop-filter: blur(24px); margin-bottom: 24px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    
+    .searchRow { display:flex; gap:12px; margin-bottom: 20px; position: relative; z-index: 2; }
+    .search { flex:1; border-radius: 16px; padding: 16px 24px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,0.1); color: var(--txt); outline:none; font-size: 15px; transition: all .3s var(--ease); font-family: Inter, sans-serif; font-weight: 500; }
+    .search:focus { border-color: var(--brand1); background: rgba(0,0,0,.6); box-shadow: 0 0 0 4px rgba(139,92,246,.2); }
+    
+    .chips { display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 24px; position: relative; z-index: 2; }
+    .chip { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(0,0,0,.4); color: var(--muted); cursor:pointer; font-weight: 600; font-size: 13px; transition: all .2s var(--ease); backdrop-filter: blur(10px); }
+    .chip.active { color: #fff; background: rgba(139,92,246,.2); border-color: var(--brand1); box-shadow: 0 4px 15px rgba(139,92,246,.3); }
+    .chip:hover:not(.active) { background: rgba(255,255,255,.1); color: var(--txt); transform: translateY(-2px); }
 
-    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .card { border-radius: var(--r2); border: 1px solid var(--stroke); background: rgba(0,0,0,.4); overflow:hidden; cursor:pointer; transition: all .4s var(--ease); position: relative; }
-    .card:hover { transform: translateY(-6px); border-color: rgba(139, 92, 246, 0.5); background: rgba(255,255,255,.05); box-shadow: 0 15px 35px rgba(0,0,0,.4), 0 0 20px rgba(139,92,246,.15); }
-    .thumb { width:100%; height: 140px; background: #000; object-fit: cover; transition: transform .5s var(--ease); }
-    .card:hover .thumb { transform: scale(1.05); }
-    .cBody { padding: 16px; position: relative; z-index: 2; background: inherit; }
-    .cName { font-weight: 800; font-size: 16px; margin:0 0 6px; }
-    .cDesc { margin:0; font-size: 13px; color: var(--muted); min-height: 38px; line-height: 1.4; }
-    .cMeta { margin-top: 14px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
-    .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--muted); text-transform: uppercase; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; position: relative; z-index: 2; }
+    .card { border-radius: var(--r2); border: 1px solid var(--stroke); background: rgba(0,0,0,.5); overflow:hidden; cursor:pointer; transition: all .4s var(--ease); position: relative; backdrop-filter: blur(10px); }
+    .card:hover { transform: translateY(-8px); border-color: rgba(139, 92, 246, 0.6); background: rgba(255,255,255,.05); box-shadow: 0 20px 40px rgba(0,0,0,.5), 0 0 20px rgba(139,92,246,.2); }
+    .thumb { width:100%; height: 150px; background: #000; object-fit: cover; transition: transform .6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .card:hover .thumb { transform: scale(1.08); }
+    .cBody { padding: 18px; position: relative; z-index: 2; background: inherit; }
+    .cName { font-weight: 800; font-size: 16px; margin:0 0 6px; letter-spacing: -0.3px; }
+    .cDesc { margin:0; font-size: 13px; color: var(--muted); min-height: 38px; line-height: 1.5; }
+    .cMeta { margin-top: 16px; display:flex; gap:8px; justify-content:space-between; align-items:center; }
+    .badge { font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.08); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;}
 
     .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 900px) { .cmd-grid { grid-template-columns: 1fr; } }
-    .cmd-box { background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); border-radius: 16px; padding: 24px; }
-    .cmd-title { font-family: 'Space Grotesk'; font-size: 18px; font-weight: 800; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; color: var(--brand2); }
-    .cmd-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .cmd-box { background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 20px; padding: 28px; backdrop-filter: blur(20px); }
+    .cmd-title { font-family: 'Space Grotesk'; font-size: 20px; font-weight: 800; margin: 0 0 20px; display: flex; align-items: center; gap: 12px; color: white; }
+    .cmd-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .cmd-row:last-child { border: none; padding-bottom: 0; }
-    .cmd-label { font-weight: 600; font-size: 14px; }
-    .cmd-sub { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
+    .cmd-label { font-weight: 700; font-size: 15px; color: white; }
+    .cmd-sub { font-size: 13px; color: var(--muted); display: block; margin-top: 6px; line-height: 1.4; }
     
-    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--stroke); }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--brand2); border-color: var(--brand2); }
-    input:checked + .slider:before { transform: translateX(20px); }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 26px; border: 1px solid var(--stroke); }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+    input:checked + .slider { background-color: var(--brand1); border-color: var(--brand1); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);}
+    input:checked + .slider:before { transform: translateX(22px); }
 
-    .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand1); color: var(--brand1); padding: 6px 16px; border-radius: 8px; font-family: monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    .keybind-btn:hover { background: rgba(139,92,246,0.2); }
-    .keybind-btn.listening { background: var(--brand1); color: #fff; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 70% { box-shadow: 0 0 0 10px rgba(139,92,246,0); } 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); } }
-    .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; font-family: Inter; }
+    .keybind-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--brand2); color: var(--brand2); padding: 8px 20px; border-radius: 10px; font-family: monospace; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .keybind-btn:hover { background: rgba(16,185,129,0.2); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+    .keybind-btn.listening { background: var(--brand2); color: #000; animation: pulseGreen 1s infinite; }
+    @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+    .cmd-select { background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); color: #fff; padding: 10px 16px; border-radius: 10px; outline: none; font-family: Inter; font-weight: 500; cursor: pointer; transition: 0.2s; }
+    .cmd-select:hover { border-color: rgba(255,255,255,0.3); }
 
     #view-browser, #view-clips, #view-music, #view-chat { height: calc(100vh - 40px); margin-bottom: 0; padding: 0; overflow: hidden; }
     #view-browser, #view-music { border: 1px solid var(--stroke); border-radius: var(--r1); }
     .lunex-browser-container { display: flex; flex-direction: column; height: 100%; background: #000; }
-    .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.9); border-bottom: 1px solid var(--stroke); }
-    .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
-    .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .browser-url-bar { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; }
+    .browser-top-bar { display: flex; gap: 12px; padding: 12px 16px; background: rgba(15,20,35,0.95); border-bottom: 1px solid var(--stroke); }
+    .nav-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 8px; border-radius: 10px; transition: 0.2s; }
+    .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; transform: scale(1.05); }
+    .browser-url-bar { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--stroke); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
     
-    .chat-input-wrapper { background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 16px; display: flex; align-items: center; padding: 10px 16px; gap: 12px; transition: border-color 0.3s; margin-top: 10px; }
-    .chat-input-wrapper:focus-within { border-color: var(--brand1); }
-    .input-icon { width: 20px; height: 20px; color: var(--muted); stroke: currentColor; fill: none; stroke-width: 2; }
-    #chatInput { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 15px; font-family: Inter; }
-    #chatSend { background: transparent; border: none; cursor: pointer; color: var(--muted); display: grid; place-items: center; transition: 0.2s; padding: 0; }
-    #chatSend:hover { color: var(--brand1); }
-    .prompt-pill { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); color: var(--muted); padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s; font-family: Inter; }
-    .prompt-pill:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
-    .chat-msg { margin: 8px 0; max-width: 85%; font-size: 14px; line-height: 1.6; word-wrap: break-word; }
-    .chat-msg.user { align-self: flex-end; background: rgba(139, 92, 246, 0.2); padding: 12px 16px; border-radius: 18px 18px 4px 18px; border: 1px solid rgba(139,92,246,0.2); }
-    .chat-msg.bot { align-self: flex-start; padding: 12px 0; border-radius: 18px 18px 18px 4px; color: var(--txt); }
-    .chat-msg code { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: monospace; border: 1px solid var(--stroke); }
-    .chat-watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; text-align: center; pointer-events: none; }
+    .chat-input-wrapper { background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); border-radius: 20px; display: flex; align-items: center; padding: 14px 20px; gap: 14px; transition: all 0.3s; margin-top: 10px; backdrop-filter: blur(10px); }
+    .chat-input-wrapper:focus-within { border-color: var(--brand1); box-shadow: 0 0 0 4px rgba(139,92,246,0.15); }
+    .input-icon { width: 22px; height: 22px; color: var(--muted); stroke: currentColor; fill: none; stroke-width: 2; }
+    #chatInput { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; font-family: Inter; }
+    #chatSend { background: var(--brand1); border: none; border-radius: 12px; cursor: pointer; color: white; display: grid; place-items: center; transition: 0.2s; padding: 8px; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+    #chatSend:hover { transform: scale(1.05); filter: brightness(1.1); }
+    .prompt-pill { background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); color: var(--txt); padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: Inter; backdrop-filter: blur(10px); }
+    .prompt-pill:hover { background: rgba(139,92,246,0.2); color: #fff; transform: translateY(-3px); border-color: var(--brand1); box-shadow: 0 5px 15px rgba(139,92,246,0.2); }
+    .chat-msg { margin: 10px 0; max-width: 85%; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
+    .chat-msg.user { align-self: flex-end; background: rgba(139, 92, 246, 0.25); padding: 14px 20px; border-radius: 20px 20px 4px 20px; border: 1px solid rgba(139,92,246,0.3); backdrop-filter: blur(10px); }
+    .chat-msg.bot { align-self: flex-start; padding: 14px 0; border-radius: 20px 20px 20px 4px; color: var(--txt); }
+    .chat-msg code { background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-family: monospace; border: 1px solid var(--stroke); color: #e2e8f0; }
 
     /* Overlays */
-    .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(16px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
+    .overlay { position: fixed; inset: 0; display:none; z-index: 9999; background: rgba(0,0,0,.85); backdrop-filter: blur(20px); padding: 16px; animation: fadeIn .3s var(--ease) forwards; align-items: center; justify-content: center; }
     .overlay.open { display:flex; }
     @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-    .player { width: 100%; max-width: 1200px; height: calc(100vh - 40px); border-radius: var(--r1); overflow: hidden; border: 1px solid var(--stroke); background: #000; display:flex; flex-direction:column; box-shadow: 0 40px 100px rgba(0,0,0,0.8); transform: scale(0.95); transition: 0.3s var(--ease); }
+    .player { width: 100%; max-width: 1300px; height: calc(100vh - 60px); border-radius: var(--r1); overflow: hidden; border: 1px solid rgba(255,255,255,0.15); background: #000; display:flex; flex-direction:column; box-shadow: 0 50px 120px rgba(0,0,0,0.9); transform: scale(0.95); transition: 0.4s var(--ease); }
     .overlay.open .player { transform: scale(1); }
-    .playerbar { padding: 16px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--bg1); border-bottom: 1px solid var(--stroke); }
+    .playerbar { padding: 16px 24px; display:flex; justify-content:space-between; align-items:center; background: rgba(15, 20, 35, 0.95); border-bottom: 1px solid var(--stroke); }
     .frameWrap { flex:1; background: #000; }
     iframe { width:100%; height:100%; border:0; }
-    .modal-box { background: rgba(15, 20, 35, 0.95); padding: 32px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 440px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); text-align: center; }
+    .modal-box { background: rgba(15, 20, 35, 0.95); padding: 40px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15); width: 100%; max-width: 480px; box-shadow: 0 50px 100px rgba(0,0,0,0.9); text-align: center; }
     svg { width: 22px; height: 22px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* ====== LUNEX OS (DESKTOP MODE) ====== */
-    #lunex-desktop { display: none; position: fixed; inset: 0; z-index: 50; overflow: hidden; background: transparent; }
-    #lunex-desktop.active { display: block; animation: fadeIn 0.5s ease; }
-    
-    .os-window { position: absolute; background: var(--bg1); border: 1px solid var(--stroke); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transition: opacity 0.2s, transform 0.2s; min-width: 300px; min-height: 200px; }
-    .os-window.minimized { opacity: 0; transform: translateY(100px) scale(0.8); pointer-events: none; }
-    
-    .os-titlebar { background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--stroke); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; }
-    .os-titlebar:active { cursor: grabbing; }
-    .os-title-text { font-family: 'Space Grotesk'; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-    .os-controls { display: flex; gap: 8px; }
-    .os-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; }
-    .os-btn-close { background: #ef4444; }
-    .os-btn-min { background: #facc15; }
-    .os-btn-max { background: #10b981; }
-    .os-content { flex: 1; background: #000; position: relative; }
-    
-    /* Taskbar */
-    .os-taskbar { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--stroke); border-radius: 20px; padding: 8px 16px; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; }
-    .os-start-btn { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: 900; font-family: 'Space Grotesk'; cursor: pointer; transition: 0.2s; }
-    .os-start-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
-    .os-task-items { display: flex; gap: 8px; border-left: 1px solid var(--stroke); padding-left: 12px; }
-    .os-task-item { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .os-task-item:hover { background: rgba(255,255,255,0.1); }
-    .os-task-item.active { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.5); color: white; }
-    .os-clock { margin-left: 12px; font-family: monospace; font-size: 14px; color: var(--muted); }
   </style>
 </head>
 <body>
 
   <div id="bootScreen" style="position:fixed; inset:0; background:#03050a; z-index:99999; display:none; flex-direction:column; justify-content:center; align-items: center; padding:40px; color:var(--brand2); transition:opacity 0.6s ease; pointer-events: none;">
     <div style="width: 100%; max-width: 600px; text-align: left;">
-       <div style="font-family:'Space Grotesk'; font-size: 24px; font-weight: 900; color: var(--brand1); margin-bottom: 20px;">LUNEX_OS <span style="font-size:14px; color:var(--muted)">v2.2</span></div>
-       <div id="bootText" style="font-family: monospace; font-size: 14px; line-height: 1.8; text-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>
-       <div id="bootCursor" style="display:inline-block; width:8px; height:15px; background:var(--brand2); animation: blinkCaret 0.8s infinite; margin-left:4px; vertical-align: middle;"></div>
+       <div style="font-family:'Space Grotesk'; font-size: 32px; font-weight: 900; color: var(--brand1); margin-bottom: 24px;">LUNEX_OS <span style="font-size:16px; color:var(--muted)">v2.4</span></div>
+       <div id="bootText" style="font-family: monospace; font-size: 15px; line-height: 2; text-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
+       <div id="bootCursor" style="display:inline-block; width:10px; height:18px; background:var(--brand2); animation: blinkCaret 0.8s infinite; margin-left:6px; vertical-align: middle;"></div>
     </div>
   </div>
 
@@ -194,8 +226,42 @@
   <canvas id="particles-canvas"></canvas>
 
   <div id="lunex-desktop">
+      
+      <div class="desktop-icons">
+          <div class="d-icon" onclick="toggleDesktopMode()">
+              <div class="d-icon-img" style="background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3);">
+                  <svg stroke="#ef4444"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+              <span>Exit OS</span>
+          </div>
+          <div class="d-icon" onclick="spawnWindow('Proxy Browser', 'https://3d.manicresin.com/')">
+              <div class="d-icon-img" style="background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.3);">
+                  <svg stroke="#0ea5e9"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+              </div>
+              <span>Browser</span>
+          </div>
+          <div class="d-icon" onclick="spawnWindow('Music Engine', 'https://monochrome.tf/')">
+              <div class="d-icon-img" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">
+                  <svg stroke="#10b981"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <span>Music</span>
+          </div>
+      </div>
+
+      <div id="os-start-menu">
+          <div class="sm-header">
+              <span class="sm-title">Start Menu</span>
+              <button class="ghost" style="padding: 8px 16px; font-size: 12px; border-radius: 8px;" onclick="toggleDesktopMode()">Return to Dashboard</button>
+          </div>
+          <input type="text" id="sm-search" class="search" placeholder="Search system memory..." style="width: 100%; margin-bottom: 20px; padding: 14px; font-size: 14px;" oninput="filterStartMenu(this.value)">
+          <div class="sm-grid" id="sm-app-grid">
+              </div>
+      </div>
+
       <div class="os-taskbar">
-          <div class="os-start-btn" onclick="toggleDesktopMode()" title="Return to Dashboard">L</div>
+          <div class="os-start-btn" onclick="toggleStartMenu()" title="Start Menu">
+              <img src="lunex-logo.png" alt="L" onerror="this.outerHTML='<span style=\\'font-weight:900; font-family:Space Grotesk; font-size:18px;\\'>L</span>'">
+          </div>
           <div class="os-task-items" id="os-taskbar-list"></div>
           <div class="os-clock" id="os-clock">00:00</div>
       </div>
@@ -204,7 +270,9 @@
   <div class="app-shell" id="classic-dashboard">
     <nav class="sidebar">
       <div class="sb-brand" onclick="window.location.reload()">
-        <div class="logo-mark">L</div>
+        <div class="logo-mark">
+            <img src="lunex-logo.png" alt="L" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.outerHTML='<div class=\\'logo-mark text-fallback\\'>L</div>'">
+        </div>
         <div class="sb-brand-text">Lunex</div>
       </div>
       <div class="sb-nav" id="nav">
@@ -272,7 +340,7 @@
         <div class="top-header"><h1 class="page-title"><svg><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg> Command Center</h1></div>
         
         <div class="cmd-grid">
-          <div class="cmd-box" style="border-color: rgba(14, 165, 233, 0.3); background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent); grid-column: 1 / -1;">
+          <div class="cmd-box" style="border-color: rgba(14, 165, 233, 0.4); background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.15), transparent); grid-column: 1 / -1;">
             <h2 class="cmd-title"><svg style="stroke: var(--brand3)"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Operating System Mode</h2>
             <div class="cmd-row">
               <div>
@@ -283,7 +351,7 @@
             </div>
           </div>
 
-          <div class="cmd-box" style="border-color: rgba(139,92,246,0.3); background: radial-gradient(circle at top right, rgba(139,92,246,0.1), transparent);">
+          <div class="cmd-box" style="border-color: rgba(139,92,246,0.4); background: radial-gradient(circle at top right, rgba(139,92,246,0.15), transparent);">
             <h2 class="cmd-title"><svg style="stroke: var(--brand1)"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Stealth Systems</h2>
             <div class="cmd-row">
               <div>
@@ -348,13 +416,17 @@
       <section class="view" id="view-chat">
         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--stroke); margin-bottom: 16px;">
           <div style="display: flex; gap: 12px; align-items: center;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand1), var(--brand3)); display: grid; place-items: center; font-weight: bold;">L</div>
+            
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: grid; place-items: center;">
+                <img src="lunex-logo.png" alt="L" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.outerHTML='<span style=\\'font-weight:900; font-family:Space Grotesk; font-size:18px;\\'>L</span>'">
+            </div>
+
             <div>
-              <div style="font-weight: bold; font-size: 16px; color: var(--txt);">LunaAI</div>
-              <div style="font-size: 11px; color: var(--muted);">Powered by Llama 3.2</div>
+              <div style="font-weight: 800; font-size: 18px; color: var(--txt); letter-spacing:-0.5px;">Luna AI</div>
+              <div style="font-size: 12px; color: var(--brand1); font-weight: 600;">Secure Network Assistant</div>
             </div>
           </div>
-          <select id="lunaModelSelect" class="cmd-select" style="background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 999px; cursor: pointer; border-color: rgba(255,255,255,0.1);">
+          <select id="lunaModelSelect" class="cmd-select" style="background: rgba(255,255,255,0.05); padding: 10px 18px; border-radius: 999px; cursor: pointer; border-color: rgba(255,255,255,0.1);">
             <option value="llama">Fast Llama 3B (Optimized)</option>
             <option value="gpt-4o">GPT-4 Omni</option>
             <option value="mistral">Mistral NeMo</option>
@@ -362,22 +434,18 @@
         </div>
 
         <div id="chatLog" style="flex: 1; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; position: relative; z-index: 1;">
-           <div class="chat-watermark">
-              <svg style="width: 80px; height: 80px; stroke: white; margin-bottom: 10px;" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-              <div style="font-size: 24px; font-weight: bold; font-family: 'Space Grotesk';">Luna AI</div>
-           </div>
         </div>
 
-        <div id="aiPrompts" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;">
-           <button class="prompt-pill">How do I learn to code efficiently?</button>
-           <button class="prompt-pill">Tell me a funny joke!</button>
+        <div id="aiPrompts" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 24px; margin-top: auto;">
+           <button class="prompt-pill">How do I learn to code?</button>
+           <button class="prompt-pill">Tell me a joke!</button>
            <button class="prompt-pill">Give me a fun fact!</button>
-           <button class="prompt-pill">What's a good game to play?</button>
+           <button class="prompt-pill">What game should I play?</button>
         </div>
 
         <div class="chat-input-wrapper">
            <svg class="input-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-           <input id="chatInput" placeholder="What would you like to talk about?" autocomplete="off" />
+           <input id="chatInput" placeholder="Message Luna..." autocomplete="off" />
            <button id="chatSend"><svg viewBox="0 0 24 24" style="transform: rotate(45deg); width: 22px; height: 22px;"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
         </div>
       </section>
@@ -387,8 +455,8 @@
   <div class="overlay" id="overlay">
     <div class="player">
       <div class="playerbar">
-        <div class="ptitle" id="playerTitle" style="font-weight: 800; font-size: 18px;">Game</div>
-        <div style="display:flex; gap: 10px;">
+        <div class="ptitle" id="playerTitle" style="font-weight: 800; font-size: 20px;">Game</div>
+        <div style="display:flex; gap: 12px;">
           <button class="ghost" id="fsBtn">Fullscreen</button>
           <a class="ghost linkbtn" id="newTabBtn" target="_blank" style="text-decoration: none;">New tab</a>
           <button class="ghost" id="closeBtn" style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5;">Close (Esc)</button>
@@ -401,34 +469,34 @@
   <div class="overlay" id="reqModal">
     <div class="modal-box" style="text-align: left;">
       <div id="reqFormArea">
-        <h3 style="margin-top:0; font-family:'Space Grotesk',sans-serif; font-size: 24px; color:var(--brand2);">Request a Game</h3>
-        <p style="font-size:14px; color:var(--muted); margin-bottom: 20px;">Tell us what you want to play.</p>
-        <input id="reqGameName" class="search" placeholder="Game Name (e.g. Minecraft 2D)" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-weight: 600;" autocomplete="off" />
-        <textarea id="reqGameDesc" class="search" placeholder="Any links or unblocked versions?" style="width:100%; box-sizing:border-box; resize:vertical; min-height:100px; padding:16px;"></textarea>
-        <div style="display:flex; gap:12px; margin-top:20px; justify-content: flex-end;">
+        <h3 style="margin-top:0; font-family:'Space Grotesk',sans-serif; font-size: 28px; color:var(--brand2);">Request Game</h3>
+        <p style="font-size:15px; color:var(--muted); margin-bottom: 24px;">Tell us what you want added to the network.</p>
+        <input id="reqGameName" class="search" placeholder="Game Name (e.g. Minecraft 2D)" style="width:100%; box-sizing:border-box; margin-bottom:16px; font-weight: 600;" autocomplete="off" />
+        <textarea id="reqGameDesc" class="search" placeholder="Any links or unblocked versions?" style="width:100%; box-sizing:border-box; resize:vertical; min-height:120px; padding:16px;"></textarea>
+        <div style="display:flex; gap:12px; margin-top:24px; justify-content: flex-end;">
           <button id="cancelReq" class="ghost">Cancel</button>
           <button id="submitReq" class="btn">Send Request</button>
         </div>
       </div>
       <div id="reqSuccessArea" style="display:none; text-align: center;">
-        <h3 style="margin-top:0; font-family:'Space Grotesk'; font-size: 28px; color:var(--brand2);">Sent! ✅</h3>
-        <p style="font-size:15px; color:var(--muted); margin-bottom: 24px; line-height: 1.5;">Your request is on its way to the secure Discord channel.</p>
-        <button id="closeReqSuccessBtn" class="ghost" style="width:100%; padding:14px;">Close</button>
+        <h3 style="margin-top:0; font-family:'Space Grotesk'; font-size: 32px; color:var(--brand2);">Sent! ✅</h3>
+        <p style="font-size:16px; color:var(--muted); margin-bottom: 30px; line-height: 1.5;">Your request is on its way to the secure Discord channel.</p>
+        <button id="closeReqSuccessBtn" class="ghost" style="width:100%; padding:16px; font-size: 16px;">Close</button>
       </div>
     </div>
   </div>
 
   <div class="overlay" id="motdModal">
     <div class="modal-box">
-      <div style="font-size: 54px; margin-bottom: 16px;">👋</div>
-      <h2 id="motdTitle" style="margin-top:0; font-family:'Space Grotesk'; font-size: 28px; color:var(--brand1);">Welcome!</h2>
-      <p id="motdText" style="font-size:15px; color:var(--muted); line-height: 1.6; margin-bottom: 24px;">Message loading...</p>
-      <button class="btn discord-link-btn" style="width: 100%; padding: 14px; font-size: 15px; margin-bottom: 12px; background: #5865F2; color: white; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);">Join Discord Server</button>
-      <button id="motdDoneBtn" class="ghost" style="width: 100%; padding: 14px; font-size: 15px;">Enter Lunex</button>
+      <div style="font-size: 64px; margin-bottom: 20px;">👋</div>
+      <h2 id="motdTitle" style="margin-top:0; font-family:'Space Grotesk'; font-size: 32px; color:var(--brand1);">Welcome!</h2>
+      <p id="motdText" style="font-size:16px; color:var(--muted); line-height: 1.6; margin-bottom: 30px;">Message loading...</p>
+      <button class="btn discord-link-btn" style="width: 100%; padding: 16px; font-size: 16px; margin-bottom: 16px; background: #5865F2; color: white; box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);">Join Discord Server</button>
+      <button id="motdDoneBtn" class="ghost" style="width: 100%; padding: 16px; font-size: 16px;">Enter Lunex</button>
     </div>
   </div>
   
-  <script src="/patch.js?v=34" defer></script>
+  <script src="/patch.js?v=36" defer></script>
   <script>
     function resetProxy() { document.getElementById('lunex-proxy-frame').src = "https://3d.manicresin.com/"; }
     function reloadProxy() { const f = document.getElementById('lunex-proxy-frame'); f.src = f.src; }

@@ -7,20 +7,15 @@
   // ======================
   const style = document.createElement('style');
   style.innerHTML = `
-    .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(15px); }
+    .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
     @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
     .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--brand1, #8b5cf6); border-radius: 50%; margin: 0 2px; animation: pulseDot 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulseDot { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
-    .card { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; animation: fadeInCard 0.4s ease forwards; opacity: 0; }
+    .card { animation: fadeInCard 0.5s ease forwards; opacity: 0; }
     @keyframes fadeInCard { to { opacity: 1; } }
-    .card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
-    .view { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-    .view:not(.active) { opacity: 0; transform: scale(0.97); pointer-events: none; position: absolute; width: 100%; }
-    .view.active { opacity: 1; transform: scale(1); position: relative; }
-    @keyframes blinkCaret { 50% { border-color: transparent; } }
-    
+    @keyframes blinkCaret { 50% { border-color: transparent; background: transparent; } }
     #gameScrollSentinel { transition: opacity 0.3s; }
   `;
   document.head.appendChild(style);
@@ -33,7 +28,7 @@
 
   const DISCORD_LINK = "https://discord.gg/5Nw5sd7qTB"; 
   const MOTD_TITLE = "Lunex V2.4 is Online 🚀";
-  const MOTD_TEXT = "Welcome to Lunex OS. Check settings to enable the new windowed desktop environment!";
+  const MOTD_TEXT = "Welcome to the ultimate network. Open settings to boot into the experimental Lunex OS desktop mode.";
 
   const $ = (q, root = document) => root.querySelector(q);
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
@@ -52,7 +47,7 @@
     const lines = [
       "Initializing core subsystems...",
       "Bypassing network firewalls...",
-      "Loading Lunex Window Manager...",
+      "Loading Interactive Particle Matrix...",
       "Injecting game modules...",
       "ACCESS GRANTED."
     ];
@@ -147,58 +142,76 @@
   }
 
   // ======================
-  //  PARTICLE ENGINE
+  //  THE NEW PARTICLE MATRIX
   // ======================
-  const pCanvas = document.getElementById('particles-canvas');
-  const ctx = pCanvas?.getContext('2d');
-  let width, height, particles;
-
   function initParticles() {
-      if(!pCanvas) return;
-      width = pCanvas.width = window.innerWidth;
-      height = pCanvas.height = window.innerHeight;
-      particles = [];
-      for (let i = 0; i < 75; i++) { 
-          let color = Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233';
+      const pCanvas = document.getElementById('particles-canvas');
+      if (!pCanvas) return;
+      const ctx = pCanvas.getContext('2d');
+      let w = pCanvas.width = window.innerWidth;
+      let h = pCanvas.height = window.innerHeight;
+      let particles = [];
+
+      // Create 80 glowing, drifting orbs
+      for (let i = 0; i < 80; i++) {
           particles.push({
-              x: Math.random() * width, y: Math.random() * height,
-              r: Math.random() * 2 + 1.5, speed: Math.random() * 0.4 + 0.1, 
-              angle: Math.random() * Math.PI * 2, alpha: Math.random() * 0.7 + 0.3,
-              color: color
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: Math.random() * 3 + 1,
+              dx: (Math.random() - 0.5) * 0.6,
+              dy: (Math.random() - 0.5) * 0.6,
+              color: Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233', // Purple or Blue
+              alpha: Math.random() * 0.5 + 0.1
           });
       }
-  }
 
-  function drawParticles() {
-      if(!ctx) return;
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < particles.length; i++) {
-          let p = particles[i];
-          p.y -= p.speed; p.x += Math.sin(p.angle) * 0.5; p.angle += 0.01;
-          if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+      function draw() {
+          ctx.clearRect(0, 0, w, h);
           
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`; 
-          ctx.shadowBlur = 15; ctx.shadowColor = `rgba(${p.color}, 0.8)`; 
-          ctx.fill();
+          particles.forEach((p, index) => {
+              // Move
+              p.x += p.dx;
+              p.y += p.dy;
+              
+              // Bounce off edges smoothly
+              if (p.x < 0 || p.x > w) p.dx *= -1;
+              if (p.y < 0 || p.y > h) p.dy *= -1;
 
-          for (let j = i + 1; j < particles.length; j++) {
-              let p2 = particles[j];
-              let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-              if (dist < 120) {
-                  ctx.beginPath();
-                  ctx.moveTo(p.x, p.y);
-                  ctx.lineTo(p2.x, p2.y);
-                  ctx.strokeStyle = `rgba(139, 92, 246, ${(1 - dist/120) * 0.3})`;
-                  ctx.lineWidth = 0.8;
-                  ctx.stroke();
+              // Draw Particle
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+              ctx.shadowBlur = 12;
+              ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+              ctx.fill();
+
+              // Draw subtle connecting lines to nearby particles
+              for (let j = index + 1; j < particles.length; j++) {
+                  let p2 = particles[j];
+                  let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                  if (dist < 120) {
+                      ctx.beginPath();
+                      ctx.moveTo(p.x, p.y);
+                      ctx.lineTo(p2.x, p2.y);
+                      ctx.strokeStyle = `rgba(${p.color}, ${(1 - dist/120) * 0.2})`;
+                      ctx.lineWidth = 0.5;
+                      ctx.stroke();
+                  }
               }
-          }
+          });
+          requestAnimationFrame(draw);
       }
-      requestAnimationFrame(drawParticles);
+      
+      draw();
+      window.addEventListener('resize', () => {
+          w = pCanvas.width = window.innerWidth;
+          h = pCanvas.height = window.innerHeight;
+      });
   }
-  if(pCanvas){ window.addEventListener('resize', initParticles); initParticles(); drawParticles(); }
 
+  // ======================
+  //  SYSTEM UI
+  // ======================
   function checkDailyPopup() {
     const today = new Date().toDateString();
     if (localStorage.getItem("lunex_last_motd") !== today) {
@@ -220,25 +233,21 @@
     addXP(1);
   }
 
-  // ======================
-  //  XP & PLAYTIME
-  // ======================
-  const LS = { XP: "lunex_xp", LV: "lunex_lv", NAME: "lunex_name", CHAT: "lunex_chat", PLAYTIME: "lunex_playtime" };
   function getInt(key, d = 0) { const v = Number(localStorage.getItem(key)); return Number.isFinite(v) ? v : d; }
   function setInt(key, v) { localStorage.setItem(key, String(v | 0)); }
   function xpNeedForLevel(lv) { return 40 + (lv - 1) * 25 + Math.floor((lv - 1) * (lv - 1) * 2.2); }
 
   function syncLevelUI() {
-    const lv = getInt(LS.LV, 1), xp = getInt(LS.XP, 0);
+    const lv = getInt("lunex_lv", 1), xp = getInt("lunex_xp", 0);
     if ($("#lv")) $("#lv").textContent = String(lv);
     if ($("#xp")) $("#xp").textContent = String(xp);
     if ($("#levelPill")) $("#levelPill").title = `Next level in ${Math.max(0, xpNeedForLevel(lv) - xp)} XP`;
   }
   function addXP(amount) {
-    let lv = getInt(LS.LV, 1), xp = getInt(LS.XP, 0) + amount;
+    let lv = getInt("lunex_lv", 1), xp = getInt("lunex_xp", 0) + amount;
     let leveled = false;
     while (xp >= xpNeedForLevel(lv)) { xp -= xpNeedForLevel(lv); lv += 1; leveled = true; }
-    setInt(LS.LV, lv); setInt(LS.XP, xp); syncLevelUI();
+    setInt("lunex_lv", lv); setInt("lunex_xp", xp); syncLevelUI();
     if (leveled) pulseToast(`Level up! You’re Lv ${lv} ✨`);
   }
 
@@ -258,8 +267,8 @@
   function startPlaytime() {
     if(ptTimer) return;
     ptTimer = setInterval(() => {
-      let mins = getInt(LS.PLAYTIME, 0) + 1;
-      setInt(LS.PLAYTIME, mins);
+      let mins = getInt("lunex_playtime", 0) + 1;
+      setInt("lunex_playtime", mins);
       if($("#ptDisplay")) $("#ptDisplay").innerText = formatPT(mins);
     }, 60000); 
   }
@@ -268,19 +277,6 @@
     if(mins < 60) return `${mins} mins`;
     return `${Math.floor(mins/60)}h ${mins%60}m`;
   }
-
-  // ======================
-  //  ENCRYPTED ADBLOCK BYPASS
-  // ======================
-  let secretBuffer = "";
-  window.addEventListener("keydown", (e) => {
-    if (e.key.length === 1 || e.key === "!") {
-      secretBuffer += e.key.toLowerCase();
-      if (secretBuffer.length > 15) secretBuffer = secretBuffer.slice(-15);
-      if (secretBuffer.endsWith("qwerty!")) { localStorage.setItem("lunex_no_ads", (Date.now() + 86400000).toString()); pulseToast("Ads disabled for 24 hours! 🤫"); secretBuffer = ""; }
-      if (secretBuffer.endsWith("!ytrewq")) { localStorage.removeItem("lunex_no_ads"); pulseToast("Ads re-enabled."); setTimeout(() => window.location.reload(), 1000); secretBuffer = ""; }
-    }
-  });
 
   const ADS = { 
     popunder: atob("aHR0cHM6Ly9wbDI4Njg0NTY1LmVmZmVjdGl2ZWdhdGVjcG0uY29tLzdiLzAyLzRkLzdiMDI0ZDY4YzZlN2Y3ZWQ0YTUxMjAxZGEyNzhhMjk0Lmpz"), 
@@ -292,11 +288,11 @@
     try {
         const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
         const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
-    } catch(e) { console.error("Ad block ignored."); }
+    } catch(e) {}
   }
 
   // ======================
-  //  LUNEX OS: WINDOW MANAGER
+  //  LUNEX OS: WINDOW MANAGER & START MENU
   // ======================
   let isOSMode = localStorage.getItem("lunex_os_mode") === "true";
   let activeWindows = [];
@@ -324,36 +320,89 @@
     }, 1000);
   }
 
+  window.toggleStartMenu = function() {
+    const sm = document.getElementById("os-start-menu");
+    if(sm) {
+      sm.classList.toggle("open");
+      if (sm.classList.contains("open")) {
+        document.getElementById("sm-search").value = "";
+        window.populateStartMenu("");
+        document.getElementById("sm-search").focus();
+      }
+    }
+  };
+
+  document.addEventListener("click", (e) => {
+    const sm = document.getElementById("os-start-menu");
+    const btn = document.querySelector(".os-start-btn");
+    if (sm && sm.classList.contains("open") && !sm.contains(e.target) && !btn.contains(e.target)) {
+        sm.classList.remove("open");
+    }
+  });
+
+  window.populateStartMenu = function(query) {
+    const grid = document.getElementById("sm-app-grid");
+    if (!grid || !GAMES) return;
+    grid.innerHTML = "";
+    
+    const q = (query || "").toLowerCase().trim();
+    const filtered = GAMES.filter(g => !q || (g.name||"").toLowerCase().includes(q) || (g.tag||"").toLowerCase().includes(q));
+    
+    filtered.slice(0, 24).forEach(g => {
+        const item = document.createElement("div");
+        item.className = "sm-item";
+        
+        const imgName = (g.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+        
+        item.innerHTML = `
+            <img src="thumbs/${imgName}.png" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
+            <span>${g.name}</span>
+        `;
+        item.onclick = () => {
+            window.spawnWindow(g.name, g.url);
+            window.toggleStartMenu();
+        };
+        grid.appendChild(item);
+    });
+  };
+
+  window.filterStartMenu = function(val) { window.populateStartMenu(val); };
+
   function bringToFront(winId) {
     const win = document.getElementById(winId);
     if(win) {
       zIndexCounter++;
       win.style.zIndex = zIndexCounter;
-      // Update taskbar highlights
       $$('.os-task-item').forEach(btn => btn.classList.remove('active'));
       const tBtn = document.getElementById(`task-${winId}`);
       if(tBtn) tBtn.classList.add('active');
     }
   }
 
-  function spawnWindow(title, url) {
+  window.spawnWindow = function(title, url) {
     const winId = 'win-' + Date.now();
     const desktop = $("#lunex-desktop");
     
-    // Create Window
     const win = document.createElement("div");
     win.className = "os-window";
     win.id = winId;
     win.style.width = "800px";
     win.style.height = "550px";
-    win.style.left = (window.innerWidth / 2 - 400 + (Math.random() * 50 - 25)) + "px";
-    win.style.top = (window.innerHeight / 2 - 275 + (Math.random() * 50 - 25)) + "px";
+    
+    // Stagger window spawns slightly
+    const offset = (activeWindows.length * 20) % 100;
+    win.style.left = (window.innerWidth / 2 - 400 + offset) + "px";
+    win.style.top = (window.innerHeight / 2 - 275 + offset) + "px";
+    
     zIndexCounter++;
     win.style.zIndex = zIndexCounter;
 
     win.innerHTML = `
       <div class="os-titlebar" id="bar-${winId}">
-        <div class="os-title-text"><svg width="14" height="14"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-4h.01M14 14h.01"/></svg> ${title}</div>
+        <div class="os-title-text">
+            <img src="lunex-logo.png" style="width:14px; height:14px; object-fit:contain;" onerror="this.style.display='none'"> 
+            ${title}
+        </div>
         <div class="os-controls">
           <button class="os-btn os-btn-min" onclick="minimizeWindow('${winId}')"></button>
           <button class="os-btn os-btn-max" onclick="maximizeWindow('${winId}')"></button>
@@ -367,7 +416,6 @@
     desktop.appendChild(win);
     activeWindows.push({ id: winId, title: title, minimized: false });
 
-    // Drag Logic
     const titleBar = win.querySelector(`#bar-${winId}`);
     let isDragging = false, startX, startY, initialLeft, initialTop;
 
@@ -376,8 +424,6 @@
       startX = e.clientX; startY = e.clientY;
       initialLeft = win.offsetLeft; initialTop = win.offsetTop;
       bringToFront(winId);
-      
-      // Prevent iframe from eating mouse events during drag
       win.querySelector('iframe').style.pointerEvents = 'none';
     });
 
@@ -465,11 +511,9 @@
   // ======================
   function openGame(game) { 
     if (isOSMode) {
-      // In OS Mode, spawn a window and return to desktop
-      spawnWindow(game.name, game.url);
+      window.spawnWindow(game.name, game.url);
       $("#classic-dashboard").classList.add("hidden");
     } else {
-      // Classic Overlay
       const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
       if (!overlay || !frame) return; 
       pTitle.textContent = game.name; 
@@ -617,21 +661,17 @@
         for (const x of extra) map.set((x.name || "").toLowerCase(), x);
         return Array.from(map.values()).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     } catch(e) {
-        console.error("Merge error", e);
         return base;
     }
   }
 
-  // ======================
-  //  INFINITE SCROLLING ENGINE 🚀
-  // ======================
   let GAMES = [];
   let gameList = [];
   let gameFilterTag = "All";
   let gameQuery = "";
   
   let gamesLoaded = 0;
-  const BATCH_SIZE = 30; // Loads 30 games at a time to kill lag
+  const BATCH_SIZE = 30;
 
   const GITHUB_JSON_URL = "https://raw.githubusercontent.com/SibbOnE3/lunex-v2upd1/main/games.json";
 
@@ -648,35 +688,29 @@
   let onGamePick = (t) => { 
     gameFilterTag = t; 
     renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick); 
-    renderGames(true); // Reset list back to 0 on new category
+    renderGames(true); 
   };
 
-  // The new Master Render function with Chunking
   function renderGames(reset = false) {
     const gameGrid = $("#gameGrid");
     if (!gameGrid) return; 
 
-    // Search the ENTIRE database first
     const q = gameQuery.trim().toLowerCase();
     const filtered = gameList.filter(g => (gameFilterTag === "All" || g.tag === gameFilterTag) && (!q || ((g.name||"") + " " + (g.tag||"") + " " + (g.desc||"")).toLowerCase().includes(q)));
 
-    // If typing in search or changing tabs, wipe the board clean
     if (reset) {
         gameGrid.innerHTML = "";
         gamesLoaded = 0;
     }
 
-    // Grab the next 30 games
     const nextBatch = filtered.slice(gamesLoaded, gamesLoaded + BATCH_SIZE);
     
-    // Inject them
     const frag = document.createDocumentFragment();
     nextBatch.forEach(g => frag.appendChild(makeCard(g, "game")));
     gameGrid.appendChild(frag);
 
     gamesLoaded += nextBatch.length;
 
-    // Toggle the "Loading..." UI at the bottom
     const sentinel = $("#gameScrollSentinel");
     if (sentinel) {
         if (gamesLoaded < filtered.length) {
@@ -701,10 +735,10 @@
     }
     gameList = [...GAMES];
     if($("#gameChips")) renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick);
-    renderGames(true); // Trigger initial batch load
+    renderGames(true);
+    window.populateStartMenu("");
   }
 
-  // Apps bypass Infinite Scroll because there are only a few
   const APPS = [
     { name:"ChatGPT", url:"https://studyquick.lbry.ru/storage/ag/apps/chatgpt/", category:"AI", desc:"Ask, write, learn, and explore." },
     { name:"CrazyGames", url:"https://studyquick.lbry.ru/storage/ag/apps/crazygames/", category:"Games", desc:"Find and play browser games." },
@@ -738,7 +772,6 @@
     const frag = document.createDocumentFragment(); list.forEach(a => frag.appendChild(makeCard(a, "app"))); appGrid.appendChild(frag);
   }
 
-  // Webhook Requests
   function openReqModal() { 
       const reqModal = $("#reqModal");
       if(reqModal) { 
@@ -748,28 +781,30 @@
       } 
   }
   
-  // Profile System
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
-    const name = localStorage.getItem(LS.NAME) || "Player";
-    const playtime = formatPT(getInt(LS.PLAYTIME, 0));
+    const name = localStorage.getItem("lunex_name") || "Player";
+    const playtime = formatPT(getInt("lunex_playtime", 0));
+    
     profileBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:16px; margin-bottom: 20px;">
-        <div style="width:60px; height:60px; border-radius:16px; display:grid; place-items:center; background:linear-gradient(135deg, var(--brand1), var(--brand3)); font-weight:900; font-size: 24px;">${String(name).slice(0, 1).toUpperCase()}</div>
+        <div style="width:64px; height:64px; border-radius:16px; display:grid; place-items:center; background:rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+          <img src="lunex-logo.png" style="width: 36px; height: 36px; object-fit: contain;" onerror="this.outerHTML='<span style=\\'font-weight:900; font-size:24px; color:white;\\'>L</span>'">
+        </div>
         <div>
-          <div style="font-weight:800; font-size:20px;">${escapeHtml(name)}</div>
+          <div style="font-weight:800; font-size:20px; color:white;">${escapeHtml(name)}</div>
           <div style="color:var(--muted); font-size:13px; margin-top:2px;">
-            Level ${getInt(LS.LV, 1)} • ${getInt(LS.XP, 0)} XP <br>
+            Level ${getInt("lunex_lv", 1)} • ${getInt("lunex_xp", 0)} XP <br>
             <span style="color: var(--brand2); font-weight:600;">⏱️ <span id="ptDisplay">${playtime}</span> Playtime</span>
           </div>
         </div>
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
-        <input id="nameInput" class="search" style="margin:0; padding:10px 14px;" placeholder="Set nickname..." value="${escapeAttr(name)}" />
-        <button class="btn" id="saveName" style="padding: 10px 16px;">Save</button>
+        <input id="nameInput" class="search" style="margin:0; padding:12px 16px;" placeholder="Set nickname..." value="${escapeAttr(name)}" />
+        <button class="btn" id="saveName" style="padding: 12px 20px;">Save</button>
       </div>
     `;
-    $("#saveName")?.addEventListener("click", () => { localStorage.setItem(LS.NAME, ($("#nameInput")?.value || "").trim().slice(0, 24) || "Player"); pulseToast("Profile Saved!"); renderProfile(); });
+    $("#saveName")?.addEventListener("click", () => { localStorage.setItem("lunex_name", ($("#nameInput")?.value || "").trim().slice(0, 24) || "Player"); pulseToast("Profile Saved!"); renderProfile(); });
   }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
   function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
@@ -811,7 +846,7 @@
     bubbles.forEach(b => b.remove());
     
     let history = [];
-    try { history = JSON.parse(localStorage.getItem(LS.CHAT) || "[]"); } catch(e) { localStorage.removeItem(LS.CHAT); }
+    try { history = JSON.parse(localStorage.getItem("lunex_chat") || "[]"); } catch(e) { localStorage.removeItem("lunex_chat"); }
 
     if (history.length > 0 && $("#aiPrompts")) { $("#aiPrompts").style.display = "none"; }
     if (history.length === 0) { appendBubble("assistant", "Hi there! I am Luna, your AI assistant for the Lunex Network. How can I help you today? ✨"); } 
@@ -827,7 +862,7 @@
     if ($("#aiPrompts")) $("#aiPrompts").style.display = "none"; 
     
     let h = [];
-    try { h = JSON.parse(localStorage.getItem(LS.CHAT) || "[]"); } catch(e) { h = []; }
+    try { h = JSON.parse(localStorage.getItem("lunex_chat") || "[]"); } catch(e) { h = []; }
     
     h.push({ role: "user", content: text });
     appendBubble("user", text); 
@@ -858,29 +893,24 @@
       const reply = await res.text(); 
       document.getElementById(typingId)?.remove();
       h.push({ role: "assistant", content: reply });
-      localStorage.setItem(LS.CHAT, JSON.stringify(h.slice(-20))); 
+      localStorage.setItem("lunex_chat", JSON.stringify(h.slice(-20))); 
       appendBubble("assistant", reply, true);
     } catch (e) {
-      console.error("🔴 LUNA AI CRASH REPORT:", e); 
       document.getElementById(typingId)?.remove();
-      appendBubble("assistant", `Oops! My brain crashed. **Error:** \`${e.message}\`. (Check the Console!) 😵`);
+      appendBubble("assistant", `Oops! My brain crashed. **Error:** \`${e.message}\`. 😵`);
     }
   }
 
-  // ======================
-  //  THE MASTER INIT
-  // ======================
   function init() {
-    // If OS mode was saved as true, launch it immediately
     if (isOSMode) {
       $("#classic-dashboard").classList.add("hidden");
       $("#lunex-desktop").classList.add("active");
       startClock();
     }
 
-    try { runBootSequence(); } catch(e) { console.error("Boot Err:", e); }
-    try { syncLevelUI(); checkDailyPopup(); initSettings(); } catch(e) { console.error("UI Setup Err:", e); }
-    
+    try { initParticles(); } catch(e) { console.error("Particle Init Error:", e); }
+    try { runBootSequence(); } catch(e) {}
+    try { syncLevelUI(); checkDailyPopup(); initSettings(); } catch(e) {}
     setTimeout(() => { try { mountAds(); } catch(e) {} }, 2000);
 
     try {
@@ -933,7 +963,7 @@
       $("#chatSend")?.addEventListener("click", () => handleChatSend());
       $("#chatInput")?.addEventListener("keydown", (e) => { if (e.key === "Enter") handleChatSend(); });
       $$(".prompt-pill").forEach(btn => { btn.addEventListener("click", () => handleChatSend(btn.innerText)); });
-    } catch(e) { console.error("Event Setup Err:", e); }
+    } catch(e) {}
 
     try {
       syncDatabase(); 
@@ -958,7 +988,7 @@
 
       observer.observe(sentinel);
 
-    } catch(e) { console.error("Data Load Err:", e); }
+    } catch(e) {}
   }
   
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
