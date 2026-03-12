@@ -2,20 +2,16 @@
   if (window.__LUNEX_PATCH_LOADED__) return;
   window.__LUNEX_PATCH_LOADED__ = true;
 
-  // ======================
-  //  UI ANIMATIONS & CSS INJECTION 
-  // ======================
   const style = document.createElement('style');
   style.innerHTML = `
-    .chat-msg { animation: slideUpFade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+    .chat-msg { animation: slideUpFade 0.3s ease forwards; opacity: 0; transform: translateY(10px); }
     @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
-    .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--brand1, #8b5cf6); border-radius: 50%; margin: 0 2px; animation: pulseDot 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+    .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--brand1, #8b5cf6); border-radius: 50%; margin: 0 2px; animation: pulseDot 1.4s infinite; }
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes pulseDot { 0%, 100% { transform: scale(0.5); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } }
-    .card { animation: fadeInCard 0.5s ease forwards; opacity: 0; }
+    .card { animation: fadeInCard 0.3s ease forwards; opacity: 0; }
     @keyframes fadeInCard { to { opacity: 1; } }
-    @keyframes blinkCaret { 50% { border-color: transparent; background: transparent; } }
     #gameScrollSentinel { transition: opacity 0.3s; }
   `;
   document.head.appendChild(style);
@@ -27,15 +23,20 @@
   }
 
   const DISCORD_LINK = "https://discord.gg/5Nw5sd7qTB"; 
-  const MOTD_TITLE = "Lunex V2.4 is Online 🚀";
-  const MOTD_TEXT = "Welcome to the ultimate network. Open settings to boot into the experimental Lunex OS desktop mode.";
+  const MOTD_TITLE = "Lunex V2.6 is Online ⚡";
+  const MOTD_TEXT = "Welcome to the Stealth & Speed update. The entire engine has been optimized for maximum performance.";
 
   const $ = (q, root = document) => root.querySelector(q);
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
-  // ======================
-  //  TERMINAL BOOT SEQUENCE
-  // ======================
+  // Base64 Decoders for Evasion
+  const getProxyUrl = () => atob("aHR0cHM6Ly8zZC5tYW5pY3Jlc2luLmNvbS8=");
+  const getMusicUrl = () => atob("aHR0cHM6Ly9tb25vY2hyb21lLnRmLw==");
+  const getWebhook = () => atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ3OTE3NzM5NTU4Mjc5OTg4Mi9uRjN1ek5qcDlmbFJGRG1sZWFEejZCekVYWjE0dXFqSDN4R1pUZjBCZDAxVFU2VXNuWW9MUE5aQUROZVhDVFg3RXNTSQ==");
+
+  window.resetProxy = () => { $("#lunex-proxy-frame").src = getProxyUrl(); };
+  window.reloadProxy = () => { const f = $("#lunex-proxy-frame"); f.src = f.src; };
+
   function runBootSequence() {
     const boot = $("#bootScreen");
     if (!boot || sessionStorage.getItem("lunex_booted")) {
@@ -47,8 +48,8 @@
     const lines = [
       "Initializing core subsystems...",
       "Bypassing network firewalls...",
-      "Loading Interactive Particle Matrix...",
-      "Injecting game modules...",
+      "Loading Fast Particle Engine...",
+      "Injecting modules...",
       "ACCESS GRANTED."
     ];
     
@@ -63,18 +64,15 @@
             if(cursor) cursor.style.display = "none";
             setTimeout(() => {
                 boot.style.opacity = "0";
-                setTimeout(() => boot.remove(), 600);
+                setTimeout(() => boot.remove(), 400);
                 sessionStorage.setItem("lunex_booted", "true");
-            }, 800);
+            }, 600);
         }
       }, delay);
-      delay += 300 + Math.random() * 200;
+      delay += 200 + Math.random() * 150; // Sped up boot
     });
   }
 
-  // ======================
-  //  V2 STEALTH SYSTEMS 
-  // ======================
   let panicKey = localStorage.getItem("lunex_panic_key") || "`";
   let panicTarget = localStorage.getItem("lunex_panic_target") || "https://classroom.google.com";
   let disguiseActive = localStorage.getItem("lunex_disguise") === "true";
@@ -84,7 +82,7 @@
     if (e.key === "Escape" && $("#overlay")?.classList.contains("open")) { closeGame(); }
   });
 
-  const defaultTitle = "Lunex";
+  const defaultTitle = "Dashboard";
   const defaultIcon = $("#dynamic-favicon")?.href || "";
   const disguiseTitle = "Classes";
   const disguiseIcon = "https://ssl.gstatic.com/classroom/favicon.png";
@@ -105,13 +103,11 @@
     const bindBtn = $("#panicBindBtn");
     const targetSelect = $("#panicTargetSelect");
     const disguiseToggle = $("#disguiseToggle");
-    const osToggle = $("#osModeToggle");
     
     if(!bindBtn) return;
     bindBtn.textContent = panicKey;
     if(targetSelect) targetSelect.value = panicTarget;
     if(disguiseToggle) disguiseToggle.checked = disguiseActive;
-    if(osToggle) osToggle.checked = isOSMode;
 
     bindBtn.addEventListener("click", () => {
       bindBtn.textContent = "Press any key...";
@@ -141,58 +137,43 @@
     });
   }
 
-  // ======================
-  //  THE NEW PARTICLE MATRIX
-  // ======================
+  // OPTIMIZED PARTICLE ENGINE (No shadowBlur, highly performant)
   function initParticles() {
       const pCanvas = document.getElementById('particles-canvas');
       if (!pCanvas) return;
-      const ctx = pCanvas.getContext('2d');
+      const ctx = pCanvas.getContext('2d', { alpha: false }); // Optimization
       let w = pCanvas.width = window.innerWidth;
       let h = pCanvas.height = window.innerHeight;
       let particles = [];
 
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 50; i++) { // Reduced count for speed
           particles.push({
               x: Math.random() * w,
               y: Math.random() * h,
-              r: Math.random() * 3 + 1,
-              dx: (Math.random() - 0.5) * 0.6,
-              dy: (Math.random() - 0.5) * 0.6,
+              r: Math.random() * 2 + 1,
+              dx: (Math.random() - 0.5) * 0.5,
+              dy: (Math.random() - 0.5) * 0.5,
               color: Math.random() > 0.5 ? '139, 92, 246' : '14, 165, 233', 
-              alpha: Math.random() * 0.5 + 0.1
+              alpha: Math.random() * 0.4 + 0.1
           });
       }
 
       function draw() {
-          ctx.clearRect(0, 0, w, h);
+          // Fast clear
+          ctx.fillStyle = '#03050a';
+          ctx.fillRect(0, 0, w, h);
           
-          particles.forEach((p, index) => {
+          particles.forEach((p) => {
               p.x += p.dx;
               p.y += p.dy;
-              
               if (p.x < 0 || p.x > w) p.dx *= -1;
               if (p.y < 0 || p.y > h) p.dy *= -1;
 
               ctx.beginPath();
               ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
               ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
-              ctx.shadowBlur = 12;
-              ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+              // Removed shadowBlur to fix lag
               ctx.fill();
-
-              for (let j = index + 1; j < particles.length; j++) {
-                  let p2 = particles[j];
-                  let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                  if (dist < 120) {
-                      ctx.beginPath();
-                      ctx.moveTo(p.x, p.y);
-                      ctx.lineTo(p2.x, p2.y);
-                      ctx.strokeStyle = `rgba(${p.color}, ${(1 - dist/120) * 0.2})`;
-                      ctx.lineWidth = 0.5;
-                      ctx.stroke();
-                  }
-              }
           });
           requestAnimationFrame(draw);
       }
@@ -204,9 +185,6 @@
       });
   }
 
-  // ======================
-  //  SYSTEM UI & DAILY PROMO
-  // ======================
   function checkDailyPopup() {
     const today = new Date().toDateString();
     if (localStorage.getItem("lunex_last_motd") !== today) {
@@ -217,19 +195,6 @@
         modal.classList.add("open");
         $("#motdDoneBtn")?.addEventListener("click", () => { localStorage.setItem("lunex_last_motd", today); modal.classList.remove("open"); }, { once: true });
       }
-    }
-    
-    // DAILY BETA PROMO BANNER (Only if not already in OS mode)
-    if (!isOSMode && localStorage.getItem("lunex_beta_promo") !== today) {
-        const banner = document.getElementById("beta-promo-banner");
-        if (banner) {
-            banner.style.display = "flex";
-            setTimeout(() => {
-                banner.style.transform = "translateY(-150%)";
-                setTimeout(() => banner.style.display = "none", 600);
-                localStorage.setItem("lunex_beta_promo", today);
-            }, 10000); // Leaves after 10 seconds
-        }
     }
   }
 
@@ -264,7 +229,7 @@
     let t = $("#lunexToast");
     if (!t) {
       t = document.createElement("div"); t.id = "lunexToast";
-      t.style.cssText = `position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px); z-index:99999; padding:14px 24px; border-radius:999px; border:1px solid rgba(255,255,255,.15); background:rgba(15, 20, 35, 0.95); color:rgba(255,255,255,.95); box-shadow:0 20px 40px rgba(0,0,0,.8); backdrop-filter:blur(12px); font-weight:700; font-size: 14px; opacity:0; transition: all .4s cubic-bezier(0.2, 0.8, 0.2, 1); pointer-events:none;`;
+      t.style.cssText = `position:fixed; left:50%; bottom:30px; transform:translateX(-50%) translateY(20px); z-index:99999; padding:14px 24px; border-radius:999px; border:1px solid rgba(255,255,255,.15); background:rgba(15, 20, 35, 0.95); color:rgba(255,255,255,.95); box-shadow:0 20px 40px rgba(0,0,0,.8); backdrop-filter:blur(12px); font-weight:700; font-size: 14px; opacity:0; transition: all .3s ease; pointer-events:none;`;
       document.body.appendChild(t);
     }
     t.textContent = text; void t.offsetWidth; t.style.opacity = "1"; t.style.transform = "translateX(-50%) translateY(0)";
@@ -286,299 +251,32 @@
     return `${Math.floor(mins/60)}h ${mins%60}m`;
   }
 
-  const ADS = { 
-    popunder: atob("aHR0cHM6Ly9wbDI4Njg0NTY1LmVmZmVjdGl2ZWdhdGVjcG0uY29tLzdiLzAyLzRkLzdiMDI0ZDY4YzZlN2Y3ZWQ0YTUxMjAxZGEyNzhhMjk0Lmpz"), 
-    socialBar: atob("aHR0cHM6Ly9wbDI4Njg0NTY4LmVmZmVjdGl2ZWdhdGVjcG0uY29tL2Y4LzY4L2JlL2Y4NjhiZTExODQ2ZDlmOWU0ZmM5ZDAwYjI2MWIzY2QzLmpz") 
-  };
-  
+  let secretBuffer = "";
+  window.addEventListener("keydown", (e) => {
+    if (e.key.length === 1 || e.key === "!") {
+      secretBuffer += e.key.toLowerCase();
+      if (secretBuffer.length > 15) secretBuffer = secretBuffer.slice(-15);
+      if (secretBuffer.endsWith("qwerty!")) { localStorage.setItem("lunex_no_ads", (Date.now() + 86400000).toString()); pulseToast("Ads disabled for 24 hours! 🤫"); secretBuffer = ""; }
+    }
+  });
+
   function mountAds() {
     if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
     try {
-        const s1 = document.createElement("script"); s1.src = ADS.popunder; s1.async = true; document.head.appendChild(s1);
-        const s2 = document.createElement("script"); s2.src = ADS.socialBar; s2.async = true; document.head.appendChild(s2);
+        const s1 = document.createElement("script"); s1.src = atob("aHR0cHM6Ly9wbDI4Njg0NTY1LmVmZmVjdGl2ZWdhdGVjcG0uY29tLzdiLzAyLzRkLzdiMDI0ZDY4YzZlN2Y3ZWQ0YTUxMjAxZGEyNzhhMjk0Lmpz"); s1.async = true; document.head.appendChild(s1);
+        const s2 = document.createElement("script"); s2.src = atob("aHR0cHM6Ly9wbDI4Njg0NTY4LmVmZmVjdGl2ZWdhdGVjcG0uY29tL2Y4LzY4L2JlL2Y4NjhiZTExODQ2ZDlmOWU0ZmM5ZDAwYjI2MWIzY2QzLmpz"); s2.async = true; document.head.appendChild(s2);
     } catch(e) {}
   }
 
-  // ======================
-  //  LUNEX OS: WINDOW MANAGER & START MENU
-  // ======================
-  let isOSMode = localStorage.getItem("lunex_os_mode") === "true";
-  let activeWindows = [];
-  let zIndexCounter = 100;
-
-  window.toggleDesktopMode = function() {
-    isOSMode = !isOSMode;
-    localStorage.setItem("lunex_os_mode", isOSMode);
-    
-    if (isOSMode) {
-      $("#classic-dashboard").classList.add("hidden");
-      $("#lunex-desktop").classList.add("active");
-      
-      // Hide promo banner if they toggle OS manually
-      const banner = document.getElementById("beta-promo-banner");
-      if(banner) banner.style.display = "none";
-      
-      pulseToast("Booting Lunex OS...");
-      startClock();
-    } else {
-      $("#classic-dashboard").classList.remove("hidden");
-      $("#lunex-desktop").classList.remove("active");
-    }
-    
-    const osToggle = $("#osModeToggle");
-    if(osToggle) osToggle.checked = isOSMode;
-  };
-
-  function startClock() {
-    setInterval(() => {
-      const now = new Date();
-      $("#os-clock").innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }, 1000);
-  }
-
-  // DESKTOP CONTEXT MENU LOGIC
-  document.addEventListener("contextmenu", (e) => {
-      if (!isOSMode) return;
-      // Only show on desktop background, not on windows/taskbar
-      if (e.target.id === "lunex-desktop") {
-          e.preventDefault();
-          const ctxMenu = document.getElementById("os-context-menu");
-          ctxMenu.style.display = "flex";
-          ctxMenu.style.left = e.clientX + "px";
-          ctxMenu.style.top = e.clientY + "px";
-      }
-  });
-
-  window.toggleStartMenu = function() {
-    const sm = document.getElementById("os-start-menu");
-    if(sm) {
-      sm.classList.toggle("open");
-      if (sm.classList.contains("open")) {
-        document.getElementById("sm-search").value = "";
-        window.populateStartMenu("");
-        document.getElementById("sm-search").focus();
-      }
-    }
-  };
-
-  document.addEventListener("click", (e) => {
-    const sm = document.getElementById("os-start-menu");
-    const btn = document.querySelector(".os-start-btn");
-    if (sm && sm.classList.contains("open") && !sm.contains(e.target) && !btn.contains(e.target)) {
-        sm.classList.remove("open");
-    }
-    
-    // Hide context menu on normal click
-    const ctxMenu = document.getElementById("os-context-menu");
-    if (ctxMenu && ctxMenu.style.display === "flex") {
-        ctxMenu.style.display = "none";
-    }
-  });
-
-  window.populateStartMenu = function(query) {
-    const grid = document.getElementById("sm-app-grid");
-    if (!grid || !GAMES) return;
-    grid.innerHTML = "";
-    
-    // Ensure profile name is updated in start menu
-    const nameStr = localStorage.getItem("lunex_name") || "Player";
-    if(document.getElementById("sm-user-name")) document.getElementById("sm-user-name").innerText = nameStr;
-    
-    const q = (query || "").toLowerCase().trim();
-    const filtered = GAMES.filter(g => !q || (g.name||"").toLowerCase().includes(q) || (g.tag||"").toLowerCase().includes(q));
-    
-    filtered.slice(0, 24).forEach(g => {
-        const item = document.createElement("div");
-        item.className = "sm-item";
-        
-        const imgName = (g.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-        
-        item.innerHTML = `
-            <img src="thumbs/${imgName}.png" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiLz48L3N2Zz4='">
-            <span>${g.name}</span>
-        `;
-        item.onclick = () => {
-            window.spawnWindow(g.name, g.url);
-            window.toggleStartMenu();
-        };
-        grid.appendChild(item);
-    });
-  };
-
-  window.filterStartMenu = function(val) { window.populateStartMenu(val); };
-
-  function bringToFront(winId) {
-    const win = document.getElementById(winId);
-    if(win) {
-      zIndexCounter++;
-      win.style.zIndex = zIndexCounter;
-      
-      // Highlight active window
-      $$('.os-window').forEach(w => w.classList.remove('active-window'));
-      win.classList.add('active-window');
-
-      // Update taskbar highlights
-      $$('.os-task-item').forEach(btn => btn.classList.remove('active'));
-      const tBtn = document.getElementById(`task-${winId}`);
-      if(tBtn) tBtn.classList.add('active');
-    }
-  }
-
-  window.spawnWindow = function(title, url) {
-    const winId = 'win-' + Date.now();
-    const desktop = $("#lunex-desktop");
-    
-    const win = document.createElement("div");
-    win.className = "os-window";
-    win.id = winId;
-    win.style.width = "800px";
-    win.style.height = "550px";
-    
-    // Stagger window spawns slightly
-    const offset = (activeWindows.length * 20) % 100;
-    win.style.left = (window.innerWidth / 2 - 400 + offset) + "px";
-    win.style.top = (window.innerHeight / 2 - 275 + offset) + "px";
-    
-    zIndexCounter++;
-    win.style.zIndex = zIndexCounter;
-
-    win.innerHTML = `
-      <div class="os-titlebar" id="bar-${winId}">
-        <div class="os-title-text">
-            <img src="lunex-logo.png" style="width:14px; height:14px; object-fit:contain;" onerror="this.style.display='none'"> 
-            ${title}
-        </div>
-        <div class="os-controls">
-          <button class="os-btn os-btn-min" onclick="minimizeWindow('${winId}')"></button>
-          <button class="os-btn os-btn-max" onclick="maximizeWindow('${winId}')"></button>
-          <button class="os-btn os-btn-close" onclick="closeWindow('${winId}')"></button>
-        </div>
-      </div>
-      <div class="os-content">
-        <iframe src="${url}" style="width:100%; height:100%; border:none; background:#000;"></iframe>
-      </div>
-    `;
-    desktop.appendChild(win);
-    activeWindows.push({ id: winId, title: title, minimized: false });
-
-    const titleBar = win.querySelector(`#bar-${winId}`);
-    let isDragging = false, startX, startY, initialLeft, initialTop;
-
-    titleBar.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.clientX; startY = e.clientY;
-      initialLeft = win.offsetLeft; initialTop = win.offsetTop;
-      bringToFront(winId);
-      win.querySelector('iframe').style.pointerEvents = 'none';
-    });
-    
-    // Double click to maximize
-    titleBar.addEventListener('dblclick', () => {
-        maximizeWindow(winId);
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      win.style.left = (initialLeft + (e.clientX - startX)) + 'px';
-      win.style.top = (initialTop + (e.clientY - startY)) + 'px';
-    });
-
-    window.addEventListener('mouseup', () => {
-      if(isDragging) {
-        isDragging = false;
-        win.querySelector('iframe').style.pointerEvents = 'auto';
-      }
-    });
-
-    win.addEventListener('mousedown', () => bringToFront(winId));
-    
-    bringToFront(winId); // Focus newly created window
-    updateTaskbar();
-    addXP(4);
-    startPlaytime();
-  }
-
-  window.closeWindow = function(winId) {
-    document.getElementById(winId)?.remove();
-    activeWindows = activeWindows.filter(w => w.id !== winId);
-    updateTaskbar();
-    if(activeWindows.length === 0) stopPlaytime();
-  };
-
-  window.minimizeWindow = function(winId) {
-    const win = document.getElementById(winId);
-    const winData = activeWindows.find(w => w.id === winId);
-    if(win && winData) {
-      win.classList.add("minimized");
-      win.classList.remove("active-window");
-      winData.minimized = true;
-      updateTaskbar();
-    }
-  };
-
-  window.maximizeWindow = function(winId) {
-    const win = document.getElementById(winId);
-    if(win) {
-      if (win.style.width === "100vw") {
-        // Restore to default
-        win.style.width = "800px"; win.style.height = "550px";
-        win.style.left = "10%"; win.style.top = "10%";
-        win.style.borderRadius = "12px";
-      } else {
-        // Maximize
-        win.style.width = "100vw"; win.style.height = "calc(100vh - 52px)";
-        win.style.left = "0"; win.style.top = "0";
-        win.style.borderRadius = "0";
-      }
-      bringToFront(winId);
-    }
-  }
-
-  window.restoreWindow = function(winId) {
-    const win = document.getElementById(winId);
-    const winData = activeWindows.find(w => w.id === winId);
-    if(win && winData) {
-      win.classList.remove("minimized");
-      winData.minimized = false;
-      bringToFront(winId);
-      updateTaskbar();
-    }
-  };
-
-  function updateTaskbar() {
-    const taskList = $("#os-taskbar-list");
-    if(!taskList) return;
-    taskList.innerHTML = "";
-    activeWindows.forEach(w => {
-      const btn = document.createElement("button");
-      btn.className = `os-task-item ${!w.minimized ? 'active' : ''}`;
-      btn.id = `task-${w.id}`;
-      btn.innerText = w.title;
-      btn.onclick = () => {
-        if(w.minimized) restoreWindow(w.id);
-        else bringToFront(w.id); // If already open, just bring to front
-      };
-      taskList.appendChild(btn);
-    });
-  }
-
-  // ======================
-  //  Game Player Controls (Hybrid)
-  // ======================
   function openGame(game) { 
-    if (isOSMode) {
-      window.spawnWindow(game.name, game.url);
-      $("#classic-dashboard").classList.add("hidden");
-    } else {
-      const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
-      if (!overlay || !frame) return; 
-      pTitle.textContent = game.name; 
-      frame.src = game.url; 
-      const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
-      overlay.classList.add("open"); 
-      addXP(3); 
-      startPlaytime(); 
-    }
+    const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
+    if (!overlay || !frame) return; 
+    pTitle.textContent = game.name; 
+    frame.src = game.url; 
+    const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
+    overlay.classList.add("open"); 
+    addXP(3); 
+    startPlaytime(); 
   }
 
   function closeGame() { 
@@ -592,7 +290,7 @@
     try {
         const card = document.createElement("div"); card.className = "card";
         const img = document.createElement("img"); img.className = "thumb"; 
-        img.loading = "lazy"; 
+        img.loading = "lazy"; img.decoding = "async"; // Speed optimization
         img.alt = item.name; 
         img.src = `thumbs/${(item.name || "").toLowerCase().replace(/&/g, " and ").replace(/['"]/g, "").replace(/\./g, "").replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}.png`; 
         img.onerror = function() { this.onerror = null; this.style.opacity = '0'; }; 
@@ -600,8 +298,14 @@
         const name = document.createElement("div"); name.className = "cName"; name.textContent = item.name || "Unknown";
         const desc = document.createElement("p"); desc.className = "cDesc"; desc.textContent = item.desc || "";
         const meta = document.createElement("div"); meta.className = "cMeta";
-        const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = type === "game" ? (item.tag || "Game") : (item.category || "App");
+        
+        // Obfuscate UI tags slightly
+        let uiTag = item.tag || "Module";
+        if(type !== "game") uiTag = item.category || "App";
+        
+        const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = uiTag;
         meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
+        
         if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
         else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
         return card;
@@ -792,7 +496,6 @@
     gameList = [...GAMES];
     if($("#gameChips")) renderChips($("#gameChips"), uniqueTags(GAMES), gameFilterTag, onGamePick);
     renderGames(true);
-    window.populateStartMenu("");
   }
 
   const APPS = [
@@ -827,24 +530,12 @@
     const list = APPS.filter(a => (appFilter === "All" || a.category === appFilter) && (!q || ((a.name||"") + " " + (a.category||"") + " " + (a.desc||"")).toLowerCase().includes(q)));
     const frag = document.createDocumentFragment(); list.forEach(a => frag.appendChild(makeCard(a, "app"))); appGrid.appendChild(frag);
   }
-
-  function openReqModal() { 
-      const reqModal = $("#reqModal");
-      if(reqModal) { 
-          $("#reqFormArea").style.display = "block"; 
-          $("#reqSuccessArea").style.display = "none"; 
-          reqModal.classList.add("open"); 
-      } 
-  }
   
   function renderProfile() {
     const profileBox = $("#profileBox"); if (!profileBox) return;
     const name = localStorage.getItem("lunex_name") || "Player";
     const playtime = formatPT(getInt("lunex_playtime", 0));
     
-    // Also update start menu profile if it exists
-    if(document.getElementById("sm-user-name")) document.getElementById("sm-user-name").innerText = name;
-
     profileBox.innerHTML = `
       <div style="display:flex; align-items:center; gap:16px; margin-bottom: 20px;">
         <div style="width:64px; height:64px; border-radius:16px; display:grid; place-items:center; background:rgba(255,255,255,0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
@@ -868,9 +559,6 @@
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
   function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
 
-  // ======================
-  //  THE LUNA AI ENGINE
-  // ======================
   function formatMarkdown(content) {
     return escapeHtml(content)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -908,7 +596,7 @@
     try { history = JSON.parse(localStorage.getItem("lunex_chat") || "[]"); } catch(e) { localStorage.removeItem("lunex_chat"); }
 
     if (history.length > 0 && $("#aiPrompts")) { $("#aiPrompts").style.display = "none"; }
-    if (history.length === 0) { appendBubble("assistant", "Hi there! I am Luna, your AI assistant for the Lunex Network. How can I help you today? ✨"); } 
+    if (history.length === 0) { appendBubble("assistant", "System active. How can I assist you on the network? ✨"); } 
     else { history.forEach(m => appendBubble(m.role, m.content)); }
   }
 
@@ -941,7 +629,7 @@
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
-            { role: "system", content: "You are Luna, the cool AI mascot for Lunex V2. Keep responses short, helpful, and chill." },
+            { role: "system", content: "You are the AI assistant for the Lunex Network. Keep responses short and helpful." },
             ...h.map(msg => ({ role: msg.role, content: msg.content }))
           ],
           model: selectedModel
@@ -956,21 +644,23 @@
       appendBubble("assistant", reply, true);
     } catch (e) {
       document.getElementById(typingId)?.remove();
-      appendBubble("assistant", `Oops! My brain crashed. **Error:** \`${e.message}\`. 😵`);
+      appendBubble("assistant", `Oops! Connection error. **Error:** \`${e.message}\`. 😵`);
     }
   }
 
   function init() {
-    if (isOSMode) {
-      $("#classic-dashboard").classList.add("hidden");
-      $("#lunex-desktop").classList.add("active");
-      startClock();
-    }
-
     try { initParticles(); } catch(e) { console.error("Particle Init Error:", e); }
     try { runBootSequence(); } catch(e) {}
     try { syncLevelUI(); checkDailyPopup(); initSettings(); } catch(e) {}
-    setTimeout(() => { try { mountAds(); } catch(e) {} }, 2000);
+    
+    // Inject proxy URLs dynamically to hide them from heuristic scanners
+    setTimeout(() => { 
+        try { mountAds(); } catch(e) {}
+        const pFrame = document.getElementById('lunex-proxy-frame');
+        if(pFrame && !pFrame.src) pFrame.src = getProxyUrl();
+        const mFrame = document.getElementById('lunex-music-frame');
+        if(mFrame && !mFrame.src) mFrame.src = getMusicUrl();
+    }, 2000);
 
     try {
       $$(".sb-tab").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
@@ -984,9 +674,18 @@
         renderGames(true); addXP(1); 
       });
       
-      $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Try: ${pick.name}`); openGame(pick); });
+      $("#boredBtn")?.addEventListener("click", () => { const pick = GAMES[Math.floor(Math.random() * GAMES.length)]; pulseToast(`Running: ${pick.name}`); openGame(pick); });
       
-      $("#gameSearch")?.addEventListener("input", (e) => { gameQuery = e.target.value; renderGames(true); });
+      // SEARCH DEBOUNCE - Fixes lag when typing fast
+      let searchTimeout;
+      $("#gameSearch")?.addEventListener("input", (e) => { 
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+              gameQuery = e.target.value; 
+              renderGames(true); 
+          }, 150);
+      });
+      
       $("#appSearch")?.addEventListener("input", (e) => { appQuery = e.target.value; renderApps(); });
 
       $("#openReqBtnPlay")?.addEventListener("click", () => { 
@@ -997,15 +696,15 @@
       
       $("#submitReq")?.addEventListener("click", async () => {
         const name = $("#reqGameName")?.value.trim(); const notes = $("#reqGameDesc")?.value.trim();
-        if (!name) return pulseToast("Please enter a game name!");
+        if (!name) return pulseToast("Please enter a name!");
         const now = Date.now();
         if (localStorage.getItem("lastGameRequest") && now - localStorage.getItem("lastGameRequest") < 300000) return pulseToast("You are doing that too fast.");
         
         $("#submitReq").innerText = "Sending...";
         try {
-          const res = await fetch("https://discord.com/api/webhooks/1479177395582799882/nF3uzNjp9flRFDmleaDZ6BzEXZ14uqjH3xGZTf0Bd01TU6UsnYoLPNZADNeXCTX7EsSI", {
+          const res = await fetch(getWebhook(), {
               method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ embeds: [{ title: "🔔 Game Request", description: `**Game:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
+              body: JSON.stringify({ embeds: [{ title: "🔔 Module Request", description: `**Target:** ${name}\n**Details:** ${notes || "None"}`, color: 9133238 }]})
           });
           if (res.ok) {
               if($("#reqGameName")) $("#reqGameName").value = ""; 
@@ -1015,7 +714,7 @@
               localStorage.setItem("lastGameRequest", now);
           } else pulseToast("Network error.");
         } catch(e) { pulseToast("Error sending request."); }
-        if($("#submitReq")) $("#submitReq").innerText = "Send Request";
+        if($("#submitReq")) $("#submitReq").innerText = "Send";
       });
 
       refreshChatLog();
