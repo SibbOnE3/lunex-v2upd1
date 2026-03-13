@@ -268,12 +268,57 @@
     } catch(e) {}
   }
 
+  // --- CORE CLOAKING FUNCTION ---
+  // Opens links in a stealthy about:blank full-screen iframe
+  function openInAboutBlank(url) {
+    const win = window.open('about:blank');
+    if (!win) {
+      pulseToast("Popup blocked! Allow popups to use the new tab feature.");
+      return;
+    }
+    const doc = win.document;
+    
+    // Inherit disguise if active
+    doc.title = disguiseActive ? disguiseTitle : defaultTitle;
+    const iconUrl = disguiseActive ? disguiseIcon : defaultIcon;
+    const link = doc.createElement('link');
+    link.rel = 'icon';
+    link.href = iconUrl;
+    doc.head.appendChild(link);
+
+    // Style the body to eliminate whitespace/scrollbars
+    doc.body.style.margin = '0';
+    doc.body.style.height = '100vh';
+    doc.body.style.overflow = 'hidden';
+    doc.body.style.backgroundColor = '#000';
+    
+    // Create the iframe payload
+    const iframe = doc.createElement('iframe');
+    iframe.style.border = 'none';
+    iframe.style.width = '100vw';
+    iframe.style.height = '100vh';
+    iframe.style.margin = '0';
+    iframe.src = url;
+    
+    doc.body.appendChild(iframe);
+  }
+
   function openGame(game) { 
     const overlay = $("#overlay"); const frame = $("#playerFrame"); const pTitle = $("#playerTitle");
     if (!overlay || !frame) return; 
     pTitle.textContent = game.name; 
     frame.src = game.url; 
-    const nTabBtn = $("#newTabBtn"); if(nTabBtn) nTabBtn.href = game.url; 
+    
+    // Setup New Tab button using cloaking script
+    const nTabBtn = $("#newTabBtn"); 
+    if(nTabBtn) {
+      nTabBtn.onclick = (e) => {
+        e.preventDefault();
+        openInAboutBlank(game.url);
+        closeGame(); // Automatically close the overlay since they opened it in a new window
+      };
+    } 
+    
     overlay.classList.add("open"); 
     addXP(3); 
     startPlaytime(); 
@@ -306,8 +351,9 @@
         const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = uiTag;
         meta.appendChild(badge); body.append(name, desc, meta); card.append(img, body);
         
+        // Use about:blank cloaking for apps as well
         if (type === "game") { card.addEventListener("click", () => openGame(item), { passive: true }); } 
-        else { card.addEventListener("click", () => { window.open(item.url, "_blank", "noopener"); addXP(2); }, { passive: true }); }
+        else { card.addEventListener("click", () => { openInAboutBlank(item.url); addXP(2); }); }
         return card;
     } catch(e) {
         return document.createElement("div");
