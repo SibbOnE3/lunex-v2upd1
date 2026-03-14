@@ -295,9 +295,18 @@
       </section>
 
       <section class="view" id="view-clips">
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border: 1px solid var(--stroke); border-radius: var(--r1);">
-          <svg style="width: 60px; height: 60px; stroke: var(--brand1); margin-bottom: 20px;" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          <h2 style="font-family:'Space Grotesk'; font-size:24px; font-weight:800; margin:0 0 12px; color: #fff;">Optimizing Feed...</h2>
+        <div style="width: 100%; height: 100%; position: relative; background: #000; border-radius: var(--r1); overflow: hidden; border: 1px solid var(--stroke);">
+          <div style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; gap: 12px; align-items: center;">
+            <div style="font-family: 'Space Grotesk'; font-weight: 800; font-size: 20px; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">Feed</div>
+            <div class="badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">Beta</div>
+          </div>
+          
+          <div id="clipsFeed" style="width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth;">
+             <div id="clipsLoading" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted);">
+                <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                <div style="margin-top: 12px; font-family: 'Space Grotesk';">Connecting to media servers...</div>
+             </div>
+          </div>
         </div>
       </section>
 

@@ -694,6 +694,97 @@
     }
   }
 
+  // ======================
+  //  Clips Feed Engine (Mega Feed & Anti-Block)
+  // ======================
+  async function initClipsFeed() {
+    const feed = document.getElementById("clipsFeed");
+    const loading = document.getElementById("clipsLoading");
+    if (!feed) return;
+
+    // We fetch from a combination of subreddits to get a massive variety of videos
+    const targetUrl = "https://www.reddit.com/r/TikTokCringe+gaming+dankvideos/hot.json?limit=100";
+    
+    // We wrap the URL in a public proxy so school Wi-Fi doesn't know you're hitting Reddit
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+    let videoData = [];
+
+    try {
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error("Proxy fetch failed");
+      
+      // AllOrigins returns the raw text inside a 'contents' key
+      const proxyData = await res.json();
+      const redditJson = JSON.parse(proxyData.contents);
+      
+      // Filter for posts that are explicitly videos
+      const posts = redditJson.data.children.filter(p => p.data.is_video && p.data.secure_media && p.data.secure_media.reddit_video);
+      
+      // Shuffle the array so it's a random mix of gaming, memes, etc.
+      const shuffledPosts = posts.sort(() => 0.5 - Math.random());
+
+      videoData = shuffledPosts.map(p => ({
+        title: p.data.title,
+        subreddit: p.data.subreddit_name_prefixed,
+        url: p.data.secure_media.reddit_video.fallback_url 
+      }));
+
+    } catch (err) {
+      console.error("Feed generation failed:", err);
+      if (loading) {
+          loading.innerHTML = `<div style="color: #fca5a5;">Failed to connect to media proxy. Network strictness too high.</div>`;
+      }
+      return;
+    }
+
+    if (loading) loading.remove();
+
+    // Render the massive feed
+    videoData.forEach((vid) => {
+      const container = document.createElement("div");
+      container.style.cssText = "height: 100%; width: 100%; scroll-snap-align: start; position: relative; display: flex; justify-content: center; align-items: center; background: #000;";
+      
+      container.innerHTML = `
+        <video src="${vid.url}" loop muted playsinline style="height: 100%; width: 100%; object-fit: cover; cursor: pointer;"></video>
+        
+        <div style="position: absolute; bottom: 30px; left: 20px; right: 80px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+          <div class="badge" style="display: inline-block; background: rgba(139, 92, 246, 0.3); color: #ddd; margin-bottom: 8px;">${vid.subreddit}</div>
+          <h3 style="margin: 0; font-size: 15px; color: #fff; font-family: Inter; line-height: 1.4;">${escapeHtml(vid.title)}</h3>
+          <p style="margin: 6px 0 0; font-size: 12px; color: rgba(255,255,255,0.6);">Tap to unmute / Pause</p>
+        </div>
+      `;
+
+      const videoEl = container.querySelector("video");
+      
+      // Tap interaction
+      videoEl.addEventListener("click", () => {
+        if (videoEl.muted) videoEl.muted = false; 
+        if (videoEl.paused) { videoEl.play(); } 
+        else { videoEl.pause(); }
+      });
+
+      feed.appendChild(container);
+    });
+
+    // Intersection Observer to auto-play ONLY the video currently on screen
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const vid = entry.target.querySelector("video");
+        if (!vid) return;
+        
+        if (entry.isIntersecting) {
+          vid.play().catch(e => console.log("Autoplay blocked:", e));
+        } else {
+          vid.pause();
+          vid.currentTime = 0; // Reset video when scrolled away
+        }
+      });
+    }, { threshold: 0.6 });
+
+    feed.querySelectorAll("div[style*='scroll-snap-align']").forEach(cont => observer.observe(cont));
+  }
+
   function init() {
     try { initParticles(); } catch(e) { console.error("Particle Init Error:", e); }
     try { runBootSequence(); } catch(e) {}
@@ -775,6 +866,7 @@
       if($("#appChips")) renderChips($("#appChips"), uniqueCats(APPS), appFilter, onAppPick); 
       renderApps();
       renderProfile(); 
+      initClipsFeed(); // Mega-feed initialized here
       
       let sentinel = document.createElement("div");
       sentinel.id = "gameScrollSentinel";
