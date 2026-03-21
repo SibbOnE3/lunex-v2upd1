@@ -30,7 +30,7 @@
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // Base64 Decoders for Evasion
-  const getProxyUrl = () => atob("aHR0cHM6Ly8zZC5tYW5pY3Jlc2luLmNvbS8=");
+  const getProxyUrl = () => atob("PGh0bWw+CjxoZWFkPgogICAgPCEtLSBHb29nbGUgdGFnIChndGFnLmpzKSAtLT4KPHNjcmlwdCBhc3luYyBzcmM9Imh0dHBzOi8vd3d3Lmdvb2dsZXRhZ21hbmFnZXIuY29tL2d0YWcvanM/aWQ9Ry1URlo3Mkw1RlBRIj48L3NjcmlwdD4KPHNjcmlwdD4KICB3aW5kb3cuZGF0YUxheWVyID0gd2luZG93LmRhdGFMYXllciB8fCBbXTsKICBmdW5jdGlvbiBndGFnKCl7ZGF0YUxheWVyLnB1c2goYXJndW1lbnRzKTt9CiAgZ3RhZygnanMnLCBuZXcgRGF0ZSgpKTsKCiAgZ3RhZygnY29uZmlnJywgJ0ctVEZaNzJMNUZQUScpOwo8L3NjcmlwdD4KICAgIDxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KICAgIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lkdGgsIGluaXRpYWwtc2NhbGU9MS4wIj4KICAgIDx0aXRsZT5nb29nbGU8L3RpdGxlPgo8L2hlYWQ+Cjxib2R5IHN0eWxlPSJtYXJnaW46IDA7IHBhZGRpbmc6IDA7IGhlaWdodDogMTAwJTsgb3ZlcmZsb3c6IGhpZGRlbjsiPgogICAgPGlmcmFtZSBzcmM9Ii9zdGF0aWMvZ29vZ2xlLWVtYmVkLmh0bWwiIHN0eWxlPSJ3aWR0aDogMTAwJTsgaGVpZ2h0OiAxMDAlOyBib3JkZXI6IG5vbmU7IiBhbGxvd2Z1bGxzY3JlZW4+PC9pZnJhbWU+CjwvYm9keT4KPC9odG1sPgo=");
   const getMusicUrl = () => atob("aHR0cHM6Ly9tb25vY2hyb21lLnRmLw==");
   const getWebhook = () => atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ3OTE3NzM5NTU4Mjc5OTg4Mi9uRjN1ek5qcDlmbFJGRG1sZWFEejZCekVYWjE0dXFqSDN4R1pUZjBCZDAxVFU2VXNuWW9MUE5aQUROZVhDVFg3RXNTSQ==");
 
@@ -733,7 +733,7 @@
     } catch (err) {
       console.error("Feed generation failed:", err);
       if (loading) {
-          loading.innerHTML = `<div style="color: #fca5a5;">Failed to connect to media proxy. Network strictness too high.</div>`;
+          loading.innerHTML = `<div style="color: #fca5a5;">Failed to connect to media proxy. Media is still in beta.</div>`;
       }
       return;
     }
