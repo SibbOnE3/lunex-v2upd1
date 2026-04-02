@@ -261,12 +261,136 @@
   });
 
   function mountAds() {
-    if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
-    try {
-        const s1 = document.createElement("script"); s1.src = atob("aHR0cHM6Ly9wbDI4Njg0NTY1LmVmZmVjdGl2ZWdhdGVjcG0uY29tLzdiLzAyLzRkLzdiMDI0ZDY4YzZlN2Y3ZWQ0YTUxMjAxZGEyNzhhMjk0Lmpz"); s1.async = true; document.head.appendChild(s1);
-        const s2 = document.createElement("script"); s2.src = atob("aHR0cHM6Ly9wbDI4Njg0NTY4LmVmZmVjdGl2ZWdhdGVjcG0uY29tL2Y4LzY4L2JlL2Y4NjhiZTExODQ2ZDlmOWU0ZmM5ZDAwYjI2MWIzY2QzLmpz"); s2.async = true; document.head.appendChild(s2);
-    } catch(e) {}
+
+  // respect existing ad disable system
+  if (localStorage.getItem("lunex_no_ads") && Date.now() < parseInt(localStorage.getItem("lunex_no_ads"))) return;
+
+  try {
+
+    const domain = window.location.hostname;
+
+    // DOMAIN → ADSTERRA SCRIPTS
+    const ADS = {
+
+      "studyquickly.pages.dev": {
+        popunder: "https://pl29044737.profitablecpmratenetwork.com/6f/81/d8/6f81d880676685edfaf269864e2d0c91.js",
+        socialbar: "https://pl29044739.profitablecpmratenetwork.com/32/fc/60/32fc601adf21bac41607d43b244cd5aa.js"
+      },
+
+      "byolos.mthultgge.online": {
+        popunder: "https://pl29044983.profitablecpmratenetwork.com/9a/25/30/9a2530bbf7d4166f9d69d6c6e33dbb61.js",
+        socialbar: "https://pl29044984.profitablecpmratenetwork.com/0e/a5/7d/0ea57d479ff4b86562f2b14ee4da4b27.js"
+      },
+
+      "cheese.mthultgge.online": {
+        popunder: "https://pl29044986.profitablecpmratenetwork.com/79/5f/4c/795f4ce0b1295d4d0dc8a5f0d5a7e1ca.jsT",
+        socialbar: "https://pl29044987.profitablecpmratenetwork.com/aa/46/bf/aa46bf0dfe03cb7958b9274f6fe5a0c0.js"
+      },
+
+      "hype.mthultgge.online": {
+        popunder: "https://pl29044991.profitablecpmratenetwork.com/5e/84/2f/5e842fdab62cc63f4176219494804338.js",
+        socialbar: "https://pl29044992.profitablecpmratenetwork.com/8b/6f/ae/8b6fae09f35acbe3fe5e51a73878cf83.js"
+      },
+
+      "longenglish.ultima.it.com": {
+        popunder: "https://pl29044994.profitablecpmratenetwork.com/32/a7/25/32a7258c2434aae893f91ac6d942adf9.js",
+        socialbar: "https://pl29044995.profitablecpmratenetwork.com/33/6c/36/336c36e417855bb2f70a580774599dbc.js"
+      },
+
+      "mathaaa.mthultgge.online": {
+        popunder: "https://pl29044996.profitablecpmratenetwork.com/b3/67/1c/b3671c091d20ca41468ea3df0536d86d.js",
+        socialbar: "https://pl29044997.profitablecpmratenetwork.com/39/ec/af/39ecaf96859d5303993993e6529c0e5e.js"
+      },
+
+      "mathquiz.ultima.it.com": {
+        popunder: "https://pl29044999.profitablecpmratenetwork.com/6b/1f/db/6b1fdbf23c9699db967862c1629f895f.js",
+        socialbar: "https://pl29045000.profitablecpmratenetwork.com/74/5c/09/745c09e003e127f227c6a8e94910bd9b.js"
+      },
+
+      "mthultgge.online": {
+        popunder: "https://pl29045003.profitablecpmratenetwork.com/31/44/75/31447508b71f0c05bc2c37176ecf4867.js",
+        socialbar: "https://pl29045004.profitablecpmratenetwork.com/9e/aa/8b/9eaa8b2f7a3ac6e5752c52d203bfa1ea.js"
+      },
+
+      "open.mthultgge.online": {
+        popunder: "https://pl29045005.profitablecpmratenetwork.com/4d/c5/be/4dc5be308d7f68091f9cb569ef054685.js",
+        socialbar: "https://pl29045006.profitablecpmratenetwork.com/de/fa/38/defa3820367269a4ebfd5b8df021f2b7.js"
+      },
+
+      "photo.mthultgge.online": {
+        popunder: "https://pl29045012.profitablecpmratenetwork.com/45/40/8b/45408b3b2de2dd5b9dcc0e37e9a0468a.js",
+        socialbar: "https://pl29045013.profitablecpmratenetwork.com/5f/4b/da/5f4bda29bb1b2c0a8157a4f121e04bae.js"
+      },
+
+      "progress.mthultgge.online": {
+        popunder: "https://pl29045022.profitablecpmratenetwork.com/09/8f/df/098fdf49659b2324a02dbea3815d0100.js",
+        socialbar: "https://pl29045023.profitablecpmratenetwork.com/07/2a/7f/072a7f05685e65ecedea546ce8826ab4.js"
+      },
+
+      "qwop.ultima.it.com": {
+        popunder: "https://pl29045025.profitablecpmratenetwork.com/e8/f0/72/e8f072a3609c9d651fc336012da86944.js",
+        socialbar: "https://pl29045026.profitablecpmratenetwork.com/6d/79/df/6d79df81ba74d8e5e2c446a6ab451ab2.js"
+      },
+
+      "runner.mthultgge.online": {
+        popunder: "https://pl29045028.profitablecpmratenetwork.com/9a/94/30/9a9430b5e421f7328a1c97f3142c2b92.js",
+        socialbar: "https://pl29045029.profitablecpmratenetwork.com/30/05/fd/3005fdfc2ab8913238b3ad76b64e5e59.js"
+      },
+
+      "science.mthultgge.online": {
+        popunder: "https://pl29045031.profitablecpmratenetwork.com/39/cf/3a/39cf3a5cd8e0862a864a5906f605de18.js",
+        socialbar: "https://pl29045032.profitablecpmratenetwork.com/3a/38/50/3a38505b7bab69c2c3d076e83f59a9ac.js"
+      },
+
+      "spanishhw.ultima.it.com": {
+        popunder: "https://pl29045106.profitablecpmratenetwork.com/00/d6/16/00d6167ce048c1fc8054df7c44ce225d.js",
+        socialbar: "https://pl29045107.profitablecpmratenetwork.com/ad/c8/6c/adc86cb3b65d7f6fe384274286733ea2.js"
+      },
+
+      "study.ultima.it.com": {
+        popunder: "https://pl29045040.profitablecpmratenetwork.com/5c/dd/fd/5cddfd27ad241f8c6870375754d28dfc.js",
+        socialbar: "https://pl29045041.profitablecpmratenetwork.com/c2/78/3a/c2783acd7d296442daa1915b88afa1b0.js"
+      },
+
+      "tyyy.ultima.it.com": {
+        popunder: "https://pl29045043.profitablecpmratenetwork.com/3a/b1/08/3ab108e58c47b08cb2a3fb9852e48019.js",
+        socialbar: "https://pl29045044.profitablecpmratenetwork.com/44/73/82/447382a93a2611a5966c43db33e9fcc5.js"
+      },
+
+      "yt45.mthultgge.online": {
+        popunder: "https://pl29045045.profitablecpmratenetwork.com/41/de/df/41dedf8bd4e55afa007afba5d7ad2abf.js",
+        socialbar: "https://pl29045046.profitablecpmratenetwork.com/3b/c5/6b/3bc56bacc388ae097501abc357f76253.js"
+      }
+
+    };
+
+    const config = ADS[domain];
+
+    if (!config) return;
+
+    // LOAD POPUNDER
+    if (config.popunder) {
+      const pop = document.createElement("script");
+      pop.src = config.popunder;
+      pop.async = true;
+      pop.type = "text/javascript";
+      document.head.appendChild(pop);
+    }
+
+    // LOAD SOCIAL BAR
+    if (config.socialbar) {
+      const social = document.createElement("script");
+      social.src = config.socialbar;
+      social.async = true;
+      social.type = "text/javascript";
+      document.head.appendChild(social);
+    }
+
+  } catch (err) {
+    console.error("Ad error:", err);
   }
+
+}
 
   // --- CORE CLOAKING FUNCTION ---
   // Opens links in a stealthy about:blank full-screen iframe
