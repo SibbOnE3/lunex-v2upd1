@@ -184,5 +184,11 @@
     "url": "https://9-5job.tejidosdedignidad.org/storage/ag/arsenic/basket-random/",
     "tag": "Sports",
     "desc": "Basket Random is a chaotic 2-player arcade sports game with unpredictable physics."
+  },
+  {
+    "name": "Soccer Random",
+    "url": "https://9-5job.tejidosdedignidad.org/storage/ag/arsenic/soccer-random/",
+    "tag": "Sports",
+    "desc": "Soccer Random is a two-player pixel-art soccer game with limited controls but unlimited randomness. Players hop and kick on the pitch with just one click."
   }
 ]
